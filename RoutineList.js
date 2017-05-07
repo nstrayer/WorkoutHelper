@@ -13,6 +13,7 @@ import {
     ListView,
     Image
 } from 'react-native';
+import RoutineView from './RoutineView';
 
 class RoutineList extends Component{
   constructor(props){
@@ -21,16 +22,21 @@ class RoutineList extends Component{
     var dataSource = new ListView.DataSource(
       {rowHasChanged: (r1,r2) => r1.name !== r2.name}
     );
+
     this.state = {
-        dataSource: dataSource.cloneWithRows(this.props.dbresponse.entries)
+        dataSource: dataSource.cloneWithRows(this.props.dbresponse.entries),
+        dbConnection: this.props.dbConnection,
+        downloadingRoutine: false,
     };
   }
 
   renderWorkout(workoutData) {
-    var name = workoutData.name.split('.')[0];
+    const name = workoutData.name.split('.')[0].replace(/_/g, " ");
+    const pathAdress = workoutData.path_display;
+
     return (
         <TouchableHighlight
-            onPress={() => console.log('clicked me')} underlayColor='#dddddd'
+            onPress={() => this.downloadRoutine(pathAdress)} underlayColor='#dddddd'
         >
             <View>
                 <View style={styles.rowContainer}>
@@ -39,6 +45,7 @@ class RoutineList extends Component{
                             {name}
                         </Text>
                     </View>
+
                 </View>
                 <View style={styles.separator}/>
             </View>
@@ -46,13 +53,55 @@ class RoutineList extends Component{
     );
   }
 
+    downloadRoutine(filePath){
+        this.setState({downloadingRoutine: true});
+
+        const dbx = this.state.dbConnection;
+        dbx.filesDownload({path: filePath})
+            .then((response) => {
+                this.readFileBlob(response.fileBlob);
+            })
+            .catch(function(error) {
+                console.log(error);
+            });
+    }
+
+    readFileBlob(blob){
+        var fileReader = new FileReader();
+        fileReader.onload = () => {
+            const workoutRaw = fileReader.result; // store the file contents
+            const workoutParsed = JSON.parse(workoutRaw);
+            console.log(workoutParsed);
+            //finished downloading
+            this.setState({downloadingRoutine: false});
+            //navigate to the routine in app.
+            this.props.navigator.push({
+                title: "Routine",
+                component: RoutineView,
+                passProps: {routineData: workoutParsed,
+                            navigator: this.props.navigator}
+            });
+        };
+        fileReader.readAsText(blob);
+    }
+
   render(){
-    console.log(this.props.dbresponse.entries);
-    return (
-      <ListView
-          dataSource={this.state.dataSource}
-          renderRow={this.renderWorkout.bind(this)}/>
-    );
+    //display the dropbox list normally, but a loading icon if we're downloading a routine.
+    return !this.state.downloadingRoutine?
+        (
+            <View>
+                <ListView
+                    dataSource={this.state.dataSource}
+                    renderRow={this.renderWorkout.bind(this)}
+                />
+            </View>
+        ):
+        (
+            <View>
+                <Text>Downloading</Text>
+                <ActivityIndicator size='large'/>
+            </View>
+        );
   }
 }
 

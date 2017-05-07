@@ -62,6 +62,7 @@ class WorkoutChoose extends Component {
         this.state = {
             downloaded_workouts: false,
             workout_list: null,
+            dbConnection: null,
         };
 
         this.getDropboxFiles();
@@ -71,9 +72,9 @@ class WorkoutChoose extends Component {
       var dbx = new Dropbox({ accessToken: DropboxToken});
       dbx.filesListFolder({path: ''})
         .then((response) => {
-          console.log(response);
           this.setState({downloaded_workouts: true,
-                          workout_list: response});
+                         workout_list: response,
+                         dbConnection: dbx});
         })
         .catch(function(error) {
           console.log(error);
@@ -81,7 +82,7 @@ class WorkoutChoose extends Component {
     }
 
     render() {
-        var spinner = !this.state.downloaded_workouts ?
+        var spinner = !this.state.downloaded_workouts?
             (
                 <View>
                     <Text>Pulling from Dropbox...</Text>
@@ -94,7 +95,11 @@ class WorkoutChoose extends Component {
 
         const theList = !this.state.downloaded_workouts?
           (<Text> ... </Text>):
-          (<RoutineList dbresponse = {this.state.workout_list}/>);
+          (<RoutineList
+              dbresponse = {this.state.workout_list}
+              dbConnection = {this.state.dbConnection}
+              navigator = {this.props.navigator}
+           />);
 
         return (
             <View style = {styles.container}>

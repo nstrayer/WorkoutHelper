@@ -70,6 +70,7 @@ class AppNav extends Component{
     this.props.navigator.push({
       title: "Choose Workout",
       component: WorkoutChoose,
+      passProps: {navigator: this.props.navigator}
     });
   }
 
