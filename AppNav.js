@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 
 import WarmupSets from './WarmupSets'
+import WorkoutChoose from './WorkoutChoose'
 
 const styles = StyleSheet.create({
     container:{
@@ -55,12 +56,20 @@ class AppNav extends Component{
     };
   }
 
-  goToSection(event){
+  goToWarmups(event){
     //logic for navigating around app.
     this.props.navigator.push({
       title: "Warmup Sets",
       component: WarmupSets,
       // passProps: {property: property}
+    });
+  }
+
+  goToWorkout(event){
+    //logic for navigating around app.
+    this.props.navigator.push({
+      title: "Choose Workout",
+      component: WorkoutChoose,
     });
   }
 
@@ -73,8 +82,16 @@ class AppNav extends Component{
         <View style = {styles.menuChoice}>
           <TouchableHighlight style = {styles.navButton}
                       underlayColor='orangered'
-                      onPress={this.goToSection.bind(this)} >
+                      onPress={this.goToWarmups.bind(this)} >
                       <Text style = {styles.buttonText}>Warmup Sets</Text>
+          </TouchableHighlight>
+        </View>
+
+        <View style = {styles.menuChoice}>
+          <TouchableHighlight style = {styles.navButton}
+                      underlayColor='orangered'
+                      onPress={this.goToWorkout.bind(this)} >
+                      <Text style = {styles.buttonText}>New Workout</Text>
           </TouchableHighlight>
         </View>
       </View>
