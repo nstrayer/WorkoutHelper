@@ -9,6 +9,7 @@ import {
     TouchableHighlight,
     ActivityIndicator,
     Image,
+    AsyncStorage,
     Linking
 } from 'react-native';
 
@@ -23,6 +24,39 @@ class AppNav extends Component{
             logged_in: false,
             token: null,
         };
+    }
+
+    componentDidMount() {
+        // this.saveToken("glabidadoo").done();
+        this.checkForToken().done();
+    }
+
+    checkForToken = async () => {
+        try {
+            const ourToken = await AsyncStorage.getItem('@DropboxTokens:token');
+            console.log(ourToken)
+
+            if (ourToken === null){
+                // Need to authenticate the user.
+                console.log("No token detected");
+            } else {
+                console.log("Detected previous login.")
+                this.setState({
+                    logged_in: true,
+                    token: ourToken,
+                });
+            }
+        } catch (error) {
+
+        }
+    }
+
+    saveToken = async (newToken) => {
+        try {
+            await AsyncStorage.setItem('@DropboxTokens:token', newToken);
+        } catch (error) {
+          console.log("Something's gone horribly wrong.");
+        }
     }
 
     grabDropboxToken(ApiKey){
@@ -48,7 +82,7 @@ class AppNav extends Component{
                     token: theToken,
                     logged_in:true
                 });
-                console.log(theToken)
+                this.saveToken(theToken);
             }
         } );
     }
@@ -70,7 +104,6 @@ class AppNav extends Component{
     }
 
   render(){
-
     return(
       <View style = {styles.container}>
         <Text>It is a good day to Workout</Text>
