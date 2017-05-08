@@ -99,7 +99,7 @@ class SetView extends Component{
         let setResults = this.state.setsInfo;
         let resultsCSV = "";
         setResults.forEach(r => {
-            resultsCSV = resultsCSV.concat(`${r.setNum},${r.reps},${r.percentage},${r.weight},${r.userChanged}, ${theDate.toString()}\n`)
+            resultsCSV = resultsCSV.concat(`${this.state.liftName}, ${r.setNum},${r.reps},${r.percentage},${r.weight},${r.userChanged}, ${theDate.toString()}\n`)
         });
         console.log(resultsCSV);
     }
