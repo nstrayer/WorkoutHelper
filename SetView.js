@@ -95,7 +95,13 @@ class SetView extends Component{
     }
 
     saveToDropbox(){
-        console.log(this.state.setsInfo);
+        const theDate = new Date();
+        let setResults = this.state.setsInfo;
+        let resultsCSV = "";
+        setResults.forEach(r => {
+            resultsCSV = resultsCSV.concat(`${r.setNum},${r.reps},${r.percentage},${r.weight},${r.userChanged}, ${theDate.toString()}\n`)
+        });
+        console.log(resultsCSV);
     }
 
     renderSet(setInfo) {
