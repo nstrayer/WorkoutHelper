@@ -19,12 +19,15 @@ class RoutineList extends Component{
   constructor(props){
     super(props);
 
-    var dataSource = new ListView.DataSource(
+    let dataSource = new ListView.DataSource(
       {rowHasChanged: (r1,r2) => r1.name !== r2.name}
     );
 
+    //get rid of the results datasets we've saved.
+    const routines = this.props.dbresponse.entries.filter(r => r.name.includes(".json"));
+
     this.state = {
-        dataSource: dataSource.cloneWithRows(this.props.dbresponse.entries),
+        dataSource: dataSource.cloneWithRows(routines),
         dbConnection: this.props.dbConnection,
         downloadingRoutine: false,
     };
@@ -79,7 +82,8 @@ class RoutineList extends Component{
                 title: "Routine",
                 component: RoutineView,
                 passProps: {routineData: workoutParsed,
-                            navigator: this.props.navigator}
+                            navigator: this.props.navigator,
+                            dbConnection: this.props.dbConnection}
             });
         };
         fileReader.readAsText(blob);

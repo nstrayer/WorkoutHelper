@@ -97,11 +97,22 @@ class SetView extends Component{
     saveToDropbox(){
         const theDate = new Date();
         let setResults = this.state.setsInfo;
+        let resultsFileName = `/${theDate.getMonth()}_${theDate.getDate()}_${theDate.getFullYear()}_${this.state.liftName.replace(/\s/g, "-")}.csv`
         let resultsCSV = "";
         setResults.forEach(r => {
             resultsCSV = resultsCSV.concat(`${this.state.liftName}, ${r.setNum},${r.reps},${r.percentage},${r.weight},${r.userChanged}, ${theDate.toString()}\n`)
         });
-        console.log(resultsCSV);
+        //give csv a header.
+        resultsCSV = "liftName, setNum, reps, percentage, weight, userChanged, date\n" + resultsCSV
+
+        this.props.dbConnection.filesUpload({
+                contents: resultsCSV,
+                path: resultsFileName,
+                mode: 'add',
+                autorename: true,
+                mute: false })
+            .then((resp)=> console.log("file sent!"))
+            .catch((error) => console.log(error));
     }
 
     renderSet(setInfo) {
@@ -224,7 +235,7 @@ var styles = StyleSheet.create({
     },
     header:{
         flexDirection: 'row',
-        backgroundColor: '#ccebc5',
+        // backgroundColor: '#ccebc5',
         padding:10,
     },
     reps: {

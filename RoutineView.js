@@ -64,6 +64,7 @@ class RoutineView extends Component{
               id: routineData.id,
               lifts: routineData.lifts,
               navigator: this.props.navigator,
+              dbConnection: this.props.dbConnection
           }
         });
     }

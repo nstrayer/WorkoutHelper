@@ -14,6 +14,7 @@ import {
     ListView,
     Image
 } from 'react-native';
+
 import SetView from './SetView';
 
 class DayView extends Component{
@@ -37,7 +38,10 @@ class DayView extends Component{
       return (
         <View>
             <View style={styles.liftSets}>
-                <SetView liftName = {liftName} liftData = {liftData}/>
+                <SetView
+                    liftName = {liftName}
+                    liftData = {liftData}
+                    dbConnection = {this.props.dbConnection}/>
             </View>
         </View>
       );
@@ -75,13 +79,13 @@ var styles = StyleSheet.create({
     },
     liftName:{
         flex: 1,
-        backgroundColor: '#ccebc5',
+        // backgroundColor: '#ccebc5',
         padding:10,
     },
     liftSets:{
         flex:1,
-        // padding:10,
-        backgroundColor: '#b3cde3',
+        padding:10,
+        // backgroundColor: '#b3cde3',
     },
     title:{
         fontSize: 30,
