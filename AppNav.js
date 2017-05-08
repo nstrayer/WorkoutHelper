@@ -8,45 +8,22 @@ import {
     View,
     TouchableHighlight,
     ActivityIndicator,
-    Image
+    Image,
+    Linking
 } from 'react-native';
 
 import WarmupSets from './WarmupSets'
 import WorkoutChoose from './WorkoutChoose'
+import ApiKey from './Config';
 
-const styles = StyleSheet.create({
-    container:{
-        padding: 30,
-        marginTop: 65,
-        alignItems: 'center'
-    },
-    flowRight: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        alignSelf: 'stretch'
-    },
-    buttonText: {
-        fontSize: 18,
-        color: 'white',
-        alignSelf: 'center'
-    },
-    navButton: {
-        height: 36,
-        flex: 1,
-        flexDirection: 'row',
-        backgroundColor: '#48BBEC',
-        borderColor: '#48BBEC',
-        borderWidth: 1,
-        borderRadius: 8,
-        marginBottom: 10,
-        alignSelf: 'stretch',
-        justifyContent: 'center'
-    },
-    menuChoice: {
-      flexDirection: 'row',
-      padding: 10
-    },
-});
+function dropboxOauth (ApiKey) {
+  Linking.openURL([
+    'https://www.dropbox.com/1/oauth2/authorize',
+    '?response_type=token',
+    '&client_id=' +  ApiKey ,
+    '&redirect_uri=WorkoutLog://foo'
+    ].join(''))
+}
 
 class AppNav extends Component{
   constructor(props){
@@ -95,9 +72,51 @@ class AppNav extends Component{
                       <Text style = {styles.buttonText}>New Workout</Text>
           </TouchableHighlight>
         </View>
+
+        <View style = {styles.menuChoice}>
+          <TouchableHighlight style = {styles.navButton}
+                      underlayColor='orangered'
+                      onPress={() => dropboxOauth(ApiKey.ApiKey)} >
+                      <Text style = {styles.buttonText}>Log In</Text>
+          </TouchableHighlight>
+        </View>
       </View>
     )
   }
 }
+
+const styles = StyleSheet.create({
+    container:{
+        padding: 30,
+        marginTop: 65,
+        alignItems: 'center'
+    },
+    flowRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'stretch'
+    },
+    buttonText: {
+        fontSize: 18,
+        color: 'white',
+        alignSelf: 'center'
+    },
+    navButton: {
+        height: 36,
+        flex: 1,
+        flexDirection: 'row',
+        backgroundColor: '#48BBEC',
+        borderColor: '#48BBEC',
+        borderWidth: 1,
+        borderRadius: 8,
+        marginBottom: 10,
+        alignSelf: 'stretch',
+        justifyContent: 'center'
+    },
+    menuChoice: {
+      flexDirection: 'row',
+      padding: 10
+    },
+});
 
 module.exports = AppNav;

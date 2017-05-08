@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 
 import Dropbox from 'dropbox';
-import DropboxToken from './DropboxToken.js';
+import DropboxToken from './myToken.js';
 import RoutineList from './RoutineList';
 
 var styles = StyleSheet.create({

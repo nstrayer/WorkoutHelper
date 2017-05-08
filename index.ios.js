@@ -10,9 +10,7 @@ import {
   View
 } from 'react-native';
 
-// import  WorkoutStart from './WorkoutStart'
-import AppNav from './AppNav'
-
+import AppNav from './AppNav';
 
 //setup styles for this component here.
 const styles = StyleSheet.create({
