@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 
 import Dropbox from 'dropbox';
-import DropboxToken from './myToken.js';
+// import DropboxToken from './myToken.js';
 import RoutineList from './RoutineList';
 
 var styles = StyleSheet.create({
@@ -63,13 +63,14 @@ class WorkoutChoose extends Component {
             downloaded_workouts: false,
             workout_list: null,
             dbConnection: null,
+            token: this.props.token,
         };
 
         this.getDropboxFiles();
     }
 
     getDropboxFiles(){
-      var dbx = new Dropbox({ accessToken: DropboxToken});
+      var dbx = new Dropbox({ accessToken: this.state.token});
       dbx.filesListFolder({path: ''})
         .then((response) => {
           this.setState({downloaded_workouts: true,
