@@ -15,15 +15,8 @@ import {
 import WarmupSets from './WarmupSets'
 import WorkoutChoose from './WorkoutChoose'
 import ApiKey from './Config';
+import DropboxLogin from './DropboxLogin';
 
-function dropboxOauth (ApiKey) {
-  Linking.openURL([
-    'https://www.dropbox.com/1/oauth2/authorize',
-    '?response_type=token',
-    '&client_id=' +  ApiKey ,
-    '&redirect_uri=WorkoutLog://foo'
-    ].join(''))
-}
 
 class AppNav extends Component{
   constructor(props){
@@ -76,7 +69,7 @@ class AppNav extends Component{
         <View style = {styles.menuChoice}>
           <TouchableHighlight style = {styles.navButton}
                       underlayColor='orangered'
-                      onPress={() => dropboxOauth(ApiKey.ApiKey)} >
+                      onPress={() => DropboxLogin(ApiKey.ApiKey)} >
                       <Text style = {styles.buttonText}>Log In</Text>
           </TouchableHighlight>
         </View>
