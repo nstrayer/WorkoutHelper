@@ -71,69 +71,23 @@ class RoutineList extends Component{
                     console.log('SERVER ERROR')
                 }
             })
-            .then((contents) => {// log the file contents
-                const workoutParsed = JSON.parse(contents);
-                this.setState({downloadingRoutine: false});
-                //navigate to the routine in app.
-                this.props.navigator.push({
-                    title: "Routine",
-                    component: RoutineView,
-                    passProps: {routineData: workoutParsed,
-                                navigator: this.props.navigator,
-                                dbConnection: this.props.dbConnection}
-                });
-            })
-            .catch((err) => {
-                console.log(err.message, err.code);
-            });
+            .then((contents) => this.readRoutine(contents))
+            .catch((err) => console.log(err.message, err.code) );
 
     }
 
-    readRoutine(filePath){
-        const localPath = RNFS.DocumentDirectoryPath + filePath;
+    readRoutine(contents){
+        const workoutParsed = JSON.parse(contents);
+        this.setState({downloadingRoutine: false});
 
-        RNFS.readFile("filepath": localPath)
-            .then((response) => {
-                console.log(response);
-            })
-            .catch((err) => {
-                console.log(err.message, err.code);
-            });
-    }
-
-
-
-    // downloadRoutine(filePath){
-    //     this.setState({downloadingRoutine: true});
-    //
-    //     const dbx = this.state.dbConnection;
-    //     dbx.filesDownload({path: filePath})
-    //         .then((response) => {
-    //             this.readFileBlob(response.fileBlob);
-    //         })
-    //         .catch(function(error) {
-    //             console.log(error);
-    //         });
-    // }
-
-    readFileBlob(blob){
-        var fileReader = new FileReader();
-        fileReader.onload = () => {
-            const workoutRaw = fileReader.result; // store the file contents
-            const workoutParsed = JSON.parse(workoutRaw);
-            console.log(workoutParsed);
-            //finished downloading
-            this.setState({downloadingRoutine: false});
-            //navigate to the routine in app.
-            this.props.navigator.push({
-                title: "Routine",
-                component: RoutineView,
-                passProps: {routineData: workoutParsed,
-                            navigator: this.props.navigator,
-                            dbConnection: this.props.dbConnection}
-            });
-        };
-        fileReader.readAsText(blob);
+        //navigate to the routine in app.
+        this.props.navigator.push({
+            title: "Routine",
+            component: RoutineView,
+            passProps: {routineData: workoutParsed,
+                        navigator: this.props.navigator,
+                        dbConnection: this.props.dbConnection}
+        });
     }
 
   render(){
