@@ -214,7 +214,7 @@ var styles = StyleSheet.create({
         fontSize: 18,
         color: '#656565',
         fontSize: 18,
-        flex:5,
+        flex:4,
     },
     poundValue: {
         textAlign: "left",
@@ -252,8 +252,8 @@ var styles = StyleSheet.create({
         flex:1,
     },
     title:{
-        fontSize: 30,
-        color: '#656565'
+        fontSize: 24,
+        color: '#3182bd'
     },
     buttonText: {
         fontSize: 18,
@@ -264,13 +264,13 @@ var styles = StyleSheet.create({
         height: 36,
         flex: 1,
         flexDirection: 'row',
-        backgroundColor: '#48BBEC',
-        borderColor: '#48BBEC',
+        backgroundColor: '#2bcdb1',
+        borderColor: '#1da890',
         borderWidth: 1,
         borderRadius: 8,
-        // marginBottom: 10,
         alignSelf: 'stretch',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        padding: 15
     },
 });
 

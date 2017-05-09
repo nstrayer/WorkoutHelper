@@ -68,7 +68,7 @@ var styles = StyleSheet.create({
         marginBottom: 20,
         fontSize: 18,
         textAlign: 'center',
-        color: 'steelblue'
+        color: '#3182bd'
     },
     rowContainer: {
         flexDirection: 'column',

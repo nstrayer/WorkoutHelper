@@ -27,7 +27,7 @@ class AppNav extends Component{
     }
 
     componentDidMount() {
-        //uncomment this to simulate a new user. 
+        //uncomment this to simulate a new user.
         // this.removeToken().done();
         this.checkForToken().done();
     }
@@ -175,8 +175,8 @@ const styles = StyleSheet.create({
         height: 36,
         flex: 1,
         alignSelf: 'stretch',
-        backgroundColor: '#48BBEC',
-        borderColor: '#48BBEC',
+        backgroundColor: '#2bcdb1',
+        borderColor: '#1da890',
         borderWidth: 1,
         borderRadius: 8,
         marginBottom: 10,
@@ -192,6 +192,7 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         fontSize: 18,
+        // color: '#4d4d4d',
         color: 'white',
         alignSelf: 'center'
     },

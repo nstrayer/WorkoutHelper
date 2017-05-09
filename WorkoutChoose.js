@@ -32,9 +32,9 @@ var styles = StyleSheet.create({
     },
     description: {
         marginBottom: 20,
-        fontSize: 18,
+        fontSize: 24,
         textAlign: 'center',
-        color: 'steelblue'
+        color: '#3182bd'
     },
     buttonText: {
         fontSize: 18,

@@ -105,7 +105,7 @@ var styles = StyleSheet.create({
     },
     title: {
         fontSize: 20,
-        color: '#656565'
+        color: '#3182bd'
     },
 });
 
