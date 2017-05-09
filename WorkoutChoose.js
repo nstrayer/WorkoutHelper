@@ -100,6 +100,7 @@ class WorkoutChoose extends Component {
               dbresponse = {this.state.workout_list}
               dbConnection = {this.state.dbConnection}
               navigator = {this.props.navigator}
+              token = {this.props.token}
            />);
 
         return (

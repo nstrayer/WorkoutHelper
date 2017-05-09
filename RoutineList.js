@@ -14,6 +14,8 @@ import {
     Image
 } from 'react-native';
 import RoutineView from './RoutineView';
+import RNFS from 'react-native-fs';
+import DownloadJSON from './DownloadJSON'
 
 class RoutineList extends Component{
   constructor(props){
@@ -57,17 +59,62 @@ class RoutineList extends Component{
   }
 
     downloadRoutine(filePath){
-        this.setState({downloadingRoutine: true});
+        const localPath = RNFS.DocumentDirectoryPath + filePath;
 
-        const dbx = this.state.dbConnection;
-        dbx.filesDownload({path: filePath})
+        DownloadJSON(filePath, this.props.token)
+            .promise
             .then((response) => {
-                this.readFileBlob(response.fileBlob);
+                if (response.statusCode == 200) {
+                    console.log('FILES Downloaded!')
+                    return RNFS.readFile(localPath, 'utf8')
+                } else {
+                    console.log('SERVER ERROR')
+                }
             })
-            .catch(function(error) {
-                console.log(error);
+            .then((contents) => {// log the file contents
+                const workoutParsed = JSON.parse(contents);
+                this.setState({downloadingRoutine: false});
+                //navigate to the routine in app.
+                this.props.navigator.push({
+                    title: "Routine",
+                    component: RoutineView,
+                    passProps: {routineData: workoutParsed,
+                                navigator: this.props.navigator,
+                                dbConnection: this.props.dbConnection}
+                });
+            })
+            .catch((err) => {
+                console.log(err.message, err.code);
+            });
+
+    }
+
+    readRoutine(filePath){
+        const localPath = RNFS.DocumentDirectoryPath + filePath;
+
+        RNFS.readFile("filepath": localPath)
+            .then((response) => {
+                console.log(response);
+            })
+            .catch((err) => {
+                console.log(err.message, err.code);
             });
     }
+
+
+
+    // downloadRoutine(filePath){
+    //     this.setState({downloadingRoutine: true});
+    //
+    //     const dbx = this.state.dbConnection;
+    //     dbx.filesDownload({path: filePath})
+    //         .then((response) => {
+    //             this.readFileBlob(response.fileBlob);
+    //         })
+    //         .catch(function(error) {
+    //             console.log(error);
+    //         });
+    // }
 
     readFileBlob(blob){
         var fileReader = new FileReader();
