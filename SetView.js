@@ -14,49 +14,41 @@ import {
     ListView,
     Image
 } from 'react-native';
-
+import saveSetInfo from './saveSetInfo';
 
 class SetView extends Component{
     constructor(props){
         super(props);
 
         //construct an array of objects for each set we're doing.
-        const liftData = this.props.liftData;
-        let setsInfo = this.makeSetsArray(liftData,"");
+        const startSetsInfo = this.makeSetsArray(this.props.liftData,"0");
 
+        //update rows if their weight changes. This is when the user puts a new
+        //overall weight in and we need to update multiple rows at once.
         var dataSource = new ListView.DataSource(
-            {rowHasChanged: (r1,r2) => r1.weight !== r2.weight}
+            {rowHasChanged: (r1,r2) => r1 !== r2}
         );
 
         this.state = {
-            oneRepMax: "0",
-            setsInfo: setsInfo,
+            setWeight: "0",
+            setsInfo: startSetsInfo,
             ds: dataSource,
-            dataSource: dataSource.cloneWithRows(setsInfo),
+            dataSource: dataSource.cloneWithRows(startSetsInfo),
             liftName: this.props.liftName,
         }
     }
 
-    calculateWeight(weight, percentage){
-        let setWeight = 0;
-        if(!isNaN(weight) && !isNaN(percentage)){
-            const rawWeight = weight * (percentage/100);
-            setWeight = Math.floor(rawWeight/5)*5;
-        }
-        return setWeight.toString();
-    }
-
     makeSetsArray(liftData, weight){
         let setsInfo = [];
-
         for(let i = 0; i < liftData.sets; i++){
             setsInfo.push(
                 {
                     setNum: i + 1,
                     reps: liftData.reps,
-                    percentage: liftData.percentage,
-                    weight: this.calculateWeight(weight, this.props.liftData.percentage),
+                    weight: weight,
                     userChanged: false, //know if the user has changed this value so we to update it or not when changing 1rm later.
+                    didIt: false,
+                    lift: liftData.name,
                 }
             );
         }
@@ -68,7 +60,6 @@ class SetView extends Component{
         newSetInfo[setNum - 1].weight = inputWeight;
         newSetInfo[setNum - 1].userChanged = true;
         this.updateSetsInfo(newSetInfo);
-        // console.log(newSetInfo)
     }
 
     newRepNum(inputReps,setNum){
@@ -76,13 +67,14 @@ class SetView extends Component{
         newSetInfo[setNum - 1].reps = inputReps;
         newSetInfo[setNum - 1].userChanged = true;
         this.updateSetsInfo(newSetInfo);
-        // console.log(newSetInfo)
     }
 
-    updateOneRepMax(newMax){
-        this.setState({oneRepMax: newMax});
+    //when the user puts in a different overall set weight, update the row data accordingly.
+    updateLiftWeight(weight){
+        this.setState({liftWeight: weight});
         let newSetInfo = this.state.setsInfo;
-        newSetInfo.forEach(set => set.weight = this.calculateWeight(newMax, this.props.liftData.percentage))
+        //if the user hasnt themselves changed a set's weight, modify it to the new overall weight.
+        newSetInfo.forEach(set => set.weight = !set.userChanged? weight: set.weight)
         this.updateSetsInfo(newSetInfo);
     }
 
@@ -94,33 +86,19 @@ class SetView extends Component{
         });
     }
 
-    saveToDropbox(){
-        const theDate = new Date();
-        let setResults = this.state.setsInfo;
-        let resultsFileName = `/${theDate.getMonth()}_${theDate.getDate()}_${theDate.getFullYear()}_${this.state.liftName.replace(/\s/g, "-")}.csv`
-        let resultsCSV = "";
-        setResults.forEach(r => {
-            resultsCSV = resultsCSV.concat(`${this.state.liftName}, ${r.setNum},${r.reps},${r.percentage},${r.weight},${r.userChanged}, ${theDate.toString()}\n`)
-        });
-        //give csv a header.
-        resultsCSV = "liftName, setNum, reps, percentage, weight, userChanged, date\n" + resultsCSV
 
-        this.props.dbConnection.filesUpload({
-                contents: resultsCSV,
-                path: resultsFileName,
-                mode: 'add',
-                autorename: true,
-                mute: false })
-            .then((resp)=> console.log("file sent!"))
-            .catch((error) => console.log(error));
+    sendSetInfo(setInfo){
+        saveSetInfo(setInfo, this.props.routine)
+
+        let newSetInfo = this.state.setsInfo
+        newSetInfo[setInfo.setNum - 1].didIt = true;
+        this.updateSetsInfo(newSetInfo);
     }
 
     renderSet(setInfo) {
         const setNum = setInfo.setNum;
         const repNum = setInfo.reps;
-        const percentage = setInfo.percentage;
         const weight = setInfo.weight;
-
         return (
             <View>
                 <View style={styles.setRow}>
@@ -129,24 +107,35 @@ class SetView extends Component{
                             Set {setNum}
                         </Text>
                     </View>
-                    <View style={styles.reps}>
+                    <View style={styles.repsInfo}>
                         <TextInput
                             style={styles.repInput}
                             keyboardType = 'numeric'
                             placeholder= {`${repNum}`}
+                            placeholderTextColor = {'#656565'}
                             onChangeText = {(text)=> this.newRepNum(text, setNum)}
                         />
-                        <Text style = {styles.poundValue}> reps </Text>
+                        <Text style = {styles.repsText}> reps </Text>
                     </View>
-                    <View style={styles.oneRepMax}>
+                    <View style={styles.weightInfo}>
                         <TextInput
                             style={styles.weightInput}
                             keyboardType = 'numeric'
-                            placeholder= {`${weight}`}
+                            placeholder = {`${weight}`}
+                            placeholderTextColor = {'#656565'}
                             onChangeText = {(text)=> this.newSetWeight(text, setNum)}
                         />
-                        <Text style = {styles.poundValue}> lbs </Text>
+                        <Text style = {styles.poundText}> lbs </Text>
                     </View>
+
+                    <TouchableHighlight
+                        style = {setInfo.didIt? styles.doneItButton : styles.didItButton}
+                        onPress={() => this.sendSetInfo(setInfo)}
+                        underlayColor='#dddddd'
+                    >
+                        <Text style = {styles.poundValue}> {setInfo.didIt? '✓': 'done'} </Text>
+
+                    </TouchableHighlight>
                 </View>
                 <View style={styles.separator}/>
             </View>
@@ -160,67 +149,47 @@ class SetView extends Component{
                     <Text style={styles.title}>
                         {this.state.liftName}
                     </Text>
-                    <View style={styles.oneRepMax}>
+                    <View style={styles.liftWeight}>
                         <TextInput
-                            style={styles.oneRepMaxInput}
+                            style={styles.weightInputHeader}
                             keyboardType = 'numeric'
-                            placeholder= "1 rep max"
-                            onChangeText = {(text) => this.updateOneRepMax(text)}
+                            placeholder= "set weight"
+                            onChangeText = {(text) => this.updateLiftWeight(text)}
                         />
-                        <Text style = {styles.poundValue}> lbs </Text>
+                        <Text style = {styles.poundTextHeader}> lbs </Text>
                     </View>
                 </View>
                 <ListView
                     dataSource={this.state.dataSource}
                     renderRow={this.renderSet.bind(this)}
                 />
-                <View style = {styles.setRow}>
-                  <TouchableHighlight style = {styles.saveButton}
-                              underlayColor='orangered'
-                              onPress={this.saveToDropbox.bind(this)} >
-                              <Text style = {styles.buttonText}>Save</Text>
-                  </TouchableHighlight>
-                </View>
             </View>
         );
     }
 }
 
 var styles = StyleSheet.create({
-
-    pageContainer:{
-        flex: 1
-    },
     setRow: {
         flex: 1,
         flexDirection: 'row',
-        padding: 10
-    },
-    separator: {
-        height: 1,
-        backgroundColor: '#dddddd'
+        // padding: 0
+        paddingVertical: 6
     },
     setInfo:{
-        flex:1
+        flex:2,
     },
-    oneRepMax: {
-        flex:1,
+    repsInfo: {
+        flex:2,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    weightInfo: {
+        flex:2,
         flexDirection: 'row',
         justifyContent: 'flex-end',
         alignItems: 'center',
-    },
-    oneRepMaxInput:{
-        textAlign: "right",
-        fontSize: 18,
-        color: '#656565',
-        fontSize: 18,
-        flex:4,
-    },
-    poundValue: {
-        textAlign: "left",
-        fontSize: 17,
-        color: '#656565',
-        flex: 1
+        // backgroundColor: '#3234d5'
     },
     weightInput:{
         textAlign: "right",
@@ -229,21 +198,66 @@ var styles = StyleSheet.create({
         fontSize: 18,
         flex:2,
     },
-    infoText:{
-        fontSize: 20,
+    poundText: {
+        textAlign: "left",
+        fontSize: 17,
         color: '#656565',
+        flex: 3,
+        // backgroundColor: '#52c729'
     },
-    header:{
-        flexDirection: 'row',
-        // backgroundColor: '#ccebc5',
-        padding:10,
+    weightInputHeader:{
+        textAlign: "right",
+        fontSize: 18,
+        color: '#656565',
+        fontSize: 18,
+        flex:4,
     },
-    reps: {
+    poundTextHeader: {
+        textAlign: "left",
+        fontSize: 17,
+        color: '#656565',
+        flex: 1,
+        // backgroundColor: '#52c729'
+    },
+
+    liftWeight: {
         flex:1,
         flexDirection: 'row',
-        justifyContent: 'center',
+        justifyContent: 'flex-end',
         alignItems: 'center',
+        // backgroundColor: '#c72929'
     },
+    liftWeightInput:{
+        textAlign: "right",
+        fontSize: 18,
+        color: '#656565',
+        fontSize: 18,
+        flex:4,
+    },
+
+    didItButton: {
+        flex: 1,
+        flexDirection: 'row',
+        backgroundColor: '#2bcdb1',
+        borderColor: '#1da890',
+        borderWidth: 1,
+        borderRadius: 8,
+        alignSelf: 'stretch',
+        justifyContent: 'center',
+        padding: 5
+    },
+    doneItButton: {
+        flex: 1,
+        flexDirection: 'row',
+        backgroundColor: '#2b89cd',
+        borderColor: '#1da890',
+        borderWidth: 1,
+        borderRadius: 8,
+        alignSelf: 'stretch',
+        justifyContent: 'center',
+        padding: 5
+    },
+
     repInput:{
         textAlign: "right",
         fontSize: 18,
@@ -251,8 +265,45 @@ var styles = StyleSheet.create({
         fontSize: 18,
         flex:1,
     },
+    repsText: {
+        textAlign: "left",
+        fontSize: 17,
+        color: '#656565',
+        flex: 2,
+    },
+    pageContainer:{
+        flex: 1
+    },
+    separator: {
+        height: 1,
+        backgroundColor: '#dddddd'
+    },
+
+    saveButton: {
+        height: 36,
+        flex: 2,
+        flexDirection: 'row',
+        backgroundColor: '#2bcdb1',
+        borderColor: '#1da890',
+        borderWidth: 1,
+        borderRadius: 8,
+        alignSelf: 'stretch',
+        justifyContent: 'center',
+        padding: 15,
+        textAlign: "center",
+    },
+    infoText:{
+        fontSize: 20,
+        color: '#656565',
+    },
+    header:{
+        flexDirection: 'row',
+        // backgroundColor: '#ccebc5',
+        padding:5,
+    },
     title:{
-        fontSize: 24,
+        fontSize: 23,
+        fontFamily: "Optima-Bold",
         color: '#3182bd'
     },
     buttonText: {
@@ -272,6 +323,7 @@ var styles = StyleSheet.create({
         justifyContent: 'center',
         padding: 15
     },
+
 });
 
 module.exports = SetView;

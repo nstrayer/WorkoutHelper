@@ -6,7 +6,7 @@ import RNFS from 'react-native-fs';
 //Returns a promise that will download the stuffs.
 const DownloadJSON = (dbLocation, token) => {
     //give local file the same name as dropbox one for syncing reasons.
-    const localPath = RNFS.DocumentDirectoryPath + dbLocation;
+    const localPath = `${RNFS.DocumentDirectoryPath}/${dbLocation}`;
 
     return (
         RNFS.downloadFile({

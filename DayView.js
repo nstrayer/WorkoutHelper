@@ -14,45 +14,67 @@ import {
     ListView,
     Image
 } from 'react-native';
-
+import FlatList from 'react-native/Libraries/Lists/FlatList';
 import SetView from './SetView';
+import sendHistoryToDropbox from './sendHistoryToDropbox';
 
 class DayView extends Component{
     constructor(props){
         super(props);
 
         var dataSource = new ListView.DataSource(
-            {rowHasChanged: (r1,r2) => r1.name !== r2.name}
+            {rowHasChanged: (r1,r2) => (r1.name !== r2.name) || this.state.uploading}
         );
 
         this.state = {
             dataSource: dataSource.cloneWithRows(this.props.lifts),
+            lifts: this.props.lifts,
             selected: true,
             dayID: this.props.id,
+            uploading: false,
         }
     }
 
     renderLift(liftData) {
-      const liftName = liftData.name;
-
-      return (
-        <View>
-            <View style={styles.liftSets}>
-                <SetView
-                    liftName = {liftName}
-                    liftData = {liftData}
-                    dbConnection = {this.props.dbConnection}/>
+        return (
+            <View>
+                <View style={styles.liftSets}>
+                    <SetView
+                        liftName = {liftData.name}
+                        liftData = {liftData}
+                        routine = {this.props.routine}
+                        dbConnection = {this.props.dbConnection}/>
+                </View>
             </View>
-        </View>
-      );
+        );
     }
 
+    finishWorkout(){
+        sendHistoryToDropbox()
+            .then(resp => console.log("done uploading"))
+            .catch(error => console.log(error))
+        this.props.navigator.pop()
+    }
+    uploadButton(){
+        return (
+            <View style = {styles.buttonContainer}>
+                <TouchableHighlight
+                    style = {styles.doneButton}
+                    onPress={() => this.finishWorkout()}
+                    underlayColor='#dddddd'
+                >
+                    <Text style = {styles.buttonText}> {`Done with workout`} </Text>
+                </TouchableHighlight>
+            </View>
+        )
+    }
     render(){
         return(
             <View style = {styles.pageContainer}>
                 <ListView
                     dataSource={this.state.dataSource}
                     renderRow={this.renderLift.bind(this)}
+                    renderFooter = {this.uploadButton.bind(this)}
                 />
             </View>
         )
@@ -60,7 +82,25 @@ class DayView extends Component{
 }
 
 var styles = StyleSheet.create({
-
+    buttonContainer:{
+        flex: 1,
+        padding: 15,
+    },
+    doneButton: {
+        height: 50,
+        flexDirection: 'row',
+        backgroundColor: '#2bcdb1',
+        borderColor: '#1da890',
+        borderWidth: 1,
+        borderRadius: 8,
+        alignSelf: 'stretch',
+        justifyContent: 'center',
+    },
+    buttonText: {
+        fontSize: 18,
+        color: 'white',
+        alignSelf: 'center'
+    },
     pageContainer:{
         flex: 1
     },

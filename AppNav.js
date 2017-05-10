@@ -16,6 +16,10 @@ import {
 import WarmupSets from './WarmupSets'
 import WorkoutChoose from './WorkoutChoose'
 import ApiKey from './Config';
+import RNFS from 'react-native-fs';
+import downloadFile from './downloadFile';
+import saveFile from './saveFile';
+import deleteFile from './deleteFile';
 
 class AppNav extends Component{
     constructor(props){
@@ -28,44 +32,42 @@ class AppNav extends Component{
 
     componentDidMount() {
         //uncomment this to simulate a new user.
-        // this.removeToken().done();
-        this.checkForToken().done();
+        // this.removeToken();
+        this.checkForToken()
     }
 
-    checkForToken = async () => {
-        try {
-            const ourToken = await AsyncStorage.getItem('@DropboxTokens:token');
-            console.log(ourToken)
-
-            if (ourToken === null){
-                // Need to authenticate the user.
-                console.log("No token detected");
-            } else {
-                console.log("Detected previous login.")
+    checkForToken(){
+        downloadFile("token")
+            .then((token) => {
+                console.log("we found a token", token)
                 this.setState({
-                    loggedIn: true,
-                    token: ourToken,
+                    token: token,
+                    loggedIn: true
                 });
-            }
-        } catch (error) {
-
-        }
+            })
+            .catch((err) => {
+                console.log(err.message, err.code);
+            });
     }
 
-    saveToken = async (newToken) => {
-        try {
-            await AsyncStorage.setItem('@DropboxTokens:token', newToken);
-        } catch (error) {
-          console.log("Something's gone horribly wrong.");
-        }
+    saveToken(token){
+        saveFile("token", token)
+          .then((success) => {
+            console.log('token sent!');
+          })
+          .catch((err) => {
+            console.log(err.message);
+          });
     }
 
-    removeToken = async () => {
-        try {
-            await AsyncStorage.removeItem('@DropboxTokens:token');
-        } catch (error) {
-          console.log("Something's gone horribly wrong.");
-        }
+    removeToken(){
+        deleteFile("token")
+          .then((success) => {
+            console.log('token deleted!');
+          })
+          .catch((err) => {
+            console.log(err.message);
+          });
     }
 
     grabDropboxToken(ApiKey){
@@ -89,12 +91,13 @@ class AppNav extends Component{
 
                 this.setState({
                     token: theToken,
-                    loggedIn:true
+                    loggedIn: true
                 });
                 this.saveToken(theToken);
             }
         } );
     }
+
     goToWarmups(event){
         this.props.navigator.push({
             title: "Warmup Sets",
@@ -192,7 +195,6 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         fontSize: 18,
-        // color: '#4d4d4d',
         color: 'white',
         alignSelf: 'center'
     },
