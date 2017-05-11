@@ -2,28 +2,24 @@
 
 // View a single day of a routine.
 // Lists lifts in order with an indented list of the individual sets below them
-
+import {buttonMain, buttonMainOutline, buttonDone, buttonDoneOutline, textGrey, textBlue} from './appColors';
 import React, { Component } from 'react'
 import {
     StyleSheet,
     Text,
-    TextInput,
     View,
     TouchableHighlight,
-    ActivityIndicator,
     ListView,
-    Image
 } from 'react-native';
-import FlatList from 'react-native/Libraries/Lists/FlatList';
 import SetView from './SetView';
-import sendHistoryToDropbox from './sendHistoryToDropbox';
+import sendHistoryToDropbox from './dropboxHelpers/sendHistoryToDropbox';
 
 class DayView extends Component{
     constructor(props){
         super(props);
 
         var dataSource = new ListView.DataSource(
-            {rowHasChanged: (r1,r2) => (r1.name !== r2.name) || this.state.uploading}
+            {rowHasChanged: (r1,r2) => (r1.name !== r2.name)}
         );
 
         this.state = {
@@ -31,7 +27,6 @@ class DayView extends Component{
             lifts: this.props.lifts,
             selected: true,
             dayID: this.props.id,
-            uploading: false,
         }
     }
 
@@ -43,7 +38,8 @@ class DayView extends Component{
                         liftName = {liftData.name}
                         liftData = {liftData}
                         routine = {this.props.routine}
-                        dbConnection = {this.props.dbConnection}/>
+                        dbConnection = {this.props.dbConnection}
+                    />
                 </View>
             </View>
         );
@@ -55,6 +51,7 @@ class DayView extends Component{
             .catch(error => console.log(error))
         this.props.navigator.pop()
     }
+
     uploadButton(){
         return (
             <View style = {styles.buttonContainer}>
@@ -68,12 +65,13 @@ class DayView extends Component{
             </View>
         )
     }
+
     render(){
         return(
             <View style = {styles.pageContainer}>
                 <ListView
-                    dataSource={this.state.dataSource}
-                    renderRow={this.renderLift.bind(this)}
+                    dataSource= {this.state.dataSource}
+                    renderRow= {this.renderLift.bind(this)}
                     renderFooter = {this.uploadButton.bind(this)}
                 />
             </View>
@@ -89,8 +87,8 @@ var styles = StyleSheet.create({
     doneButton: {
         height: 50,
         flexDirection: 'row',
-        backgroundColor: '#2bcdb1',
-        borderColor: '#1da890',
+        backgroundColor: buttonMain,
+        borderColor: buttonMainOutline,
         borderWidth: 1,
         borderRadius: 8,
         alignSelf: 'stretch',

@@ -2,7 +2,16 @@
 
 // View a single day of a routine.
 // Lists lifts in order with an indented list of the individual sets below them
-
+import {
+    buttonMain,
+    buttonMainOutline,
+    buttonDone,
+    buttonDoneOutline,
+    textGrey,
+    textBlue,
+    buttonDisabled,
+    buttonDisabledOutline
+} from './appColors';
 import React, { Component } from 'react'
 import {
     StyleSheet,
@@ -35,6 +44,7 @@ class SetView extends Component{
             ds: dataSource,
             dataSource: dataSource.cloneWithRows(startSetsInfo),
             liftName: this.props.liftName,
+            oneLiftLeft: false,
         }
     }
 
@@ -86,6 +96,43 @@ class SetView extends Component{
         });
     }
 
+    //if the user clicks a button to add a set then append another one to the set data
+    //We will autofill in its numbers with those from the last current set.
+    addSet(){
+        console.log("old set info",this.state.setsInfo)
+        let setsInfo = this.state.setsInfo
+        let lastSet = JSON.parse(JSON.stringify(setsInfo.slice(-1)[0]))
+        lastSet.userChanged = false
+        lastSet.didIt = false
+        lastSet.setNum = lastSet.setNum + 1
+
+        //append this new set to our set info.
+        setsInfo.push(lastSet)
+
+        console.log("new set info",setsInfo)
+
+        this.setState({
+            oneLiftLeft: setsInfo.length === 1,
+            setsInfo: setsInfo,
+            dataSource: this.state.ds.cloneWithRows(setsInfo),
+        })
+    }
+
+    removeSet(){
+        //Make sure we don't accidentally delete the last set.
+        if(!this.state.oneLiftLeft){
+            let setsInfo = this.state.setsInfo
+            setsInfo.pop()
+
+            this.setState({
+                oneLiftLeft: setsInfo.length === 1,
+                setsInfo: setsInfo,
+                dataSource: this.state.ds.cloneWithRows(setsInfo),
+            })
+        }
+
+    }
+
 
     sendSetInfo(setInfo){
         saveSetInfo(setInfo, this.props.routine)
@@ -93,6 +140,31 @@ class SetView extends Component{
         let newSetInfo = this.state.setsInfo
         newSetInfo[setInfo.setNum - 1].didIt = true;
         this.updateSetsInfo(newSetInfo);
+    }
+
+    setFooter(){
+        return(
+            <View style={styles.footer}>
+                <View style = {styles.setChange}>
+                    <TouchableHighlight
+                        style = {styles.addRemoveButton}
+                        onPress={() => this.addSet()}
+                        underlayColor='#dddddd'
+                    >
+                        <Text style = {styles.addRemoveText}> add set </Text>
+                    </TouchableHighlight>
+                </View>
+                <View style = {styles.setChange}>
+                    <TouchableHighlight
+                        style = {this.state.oneLiftLeft? styles.disabledButton: styles.addRemoveButton}
+                        onPress={() => this.removeSet()}
+                        underlayColor='#dddddd'
+                    >
+                        <Text style = {styles.addRemoveText}> remove set </Text>
+                    </TouchableHighlight>
+                </View>
+            </View>
+        )
     }
 
     renderSet(setInfo) {
@@ -112,7 +184,7 @@ class SetView extends Component{
                             style={styles.repInput}
                             keyboardType = 'numeric'
                             placeholder= {`${repNum}`}
-                            placeholderTextColor = {'#656565'}
+                            placeholderTextColor = {textGrey}
                             onChangeText = {(text)=> this.newRepNum(text, setNum)}
                         />
                         <Text style = {styles.repsText}> reps </Text>
@@ -122,7 +194,7 @@ class SetView extends Component{
                             style={styles.weightInput}
                             keyboardType = 'numeric'
                             placeholder = {`${weight}`}
-                            placeholderTextColor = {'#656565'}
+                            placeholderTextColor = {textGrey}
                             onChangeText = {(text)=> this.newSetWeight(text, setNum)}
                         />
                         <Text style = {styles.poundText}> lbs </Text>
@@ -133,7 +205,7 @@ class SetView extends Component{
                         onPress={() => this.sendSetInfo(setInfo)}
                         underlayColor='#dddddd'
                     >
-                        <Text style = {styles.poundValue}> {setInfo.didIt? '✓': 'done'} </Text>
+                        <Text style = {styles.didItText}> {setInfo.didIt? '✓': 'done'} </Text>
 
                     </TouchableHighlight>
                 </View>
@@ -160,8 +232,9 @@ class SetView extends Component{
                     </View>
                 </View>
                 <ListView
-                    dataSource={this.state.dataSource}
-                    renderRow={this.renderSet.bind(this)}
+                    dataSource = {this.state.dataSource}
+                    renderRow = {this.renderSet.bind(this)}
+                    renderFooter = {this.setFooter.bind(this)}
                 />
             </View>
         );
@@ -172,11 +245,41 @@ var styles = StyleSheet.create({
     setRow: {
         flex: 1,
         flexDirection: 'row',
-        // padding: 0
         paddingVertical: 6
     },
-    setInfo:{
-        flex:2,
+    header:{
+        flexDirection: 'row',
+        padding:5,
+    },
+    footer:{
+        flexDirection: 'row',
+        justifyContent: 'center',
+        padding: 5,
+    },
+    setChange:{
+        flex: 1,
+        paddingHorizontal: 20,
+    },
+    addRemoveButton: {
+        backgroundColor: buttonMain,
+        borderColor: buttonMainOutline,
+        borderWidth: 1,
+        borderRadius: 8,
+        justifyContent: 'center',
+        padding: 3
+    },
+    disabledButton: {
+        backgroundColor: buttonDisabled,
+        borderColor: buttonDisabledOutline,
+        borderWidth: 1,
+        borderRadius: 8,
+        justifyContent: 'center',
+        padding: 3
+    },
+    addRemoveText:{
+        textAlign: "center",
+        fontSize: 15,
+        color: 'white',
     },
     repsInfo: {
         flex:2,
@@ -189,57 +292,54 @@ var styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
         alignItems: 'center',
-        // backgroundColor: '#3234d5'
     },
     weightInput:{
         textAlign: "right",
         fontSize: 18,
-        color: '#656565',
+        color: textGrey,
         fontSize: 18,
         flex:2,
     },
     poundText: {
         textAlign: "left",
         fontSize: 17,
-        color: '#656565',
+        color: textGrey,
         flex: 3,
-        // backgroundColor: '#52c729'
     },
     weightInputHeader:{
         textAlign: "right",
         fontSize: 18,
-        color: '#656565',
+        color: textGrey,
         fontSize: 18,
         flex:4,
     },
     poundTextHeader: {
         textAlign: "left",
         fontSize: 17,
-        color: '#656565',
+        color: textGrey,
         flex: 1,
-        // backgroundColor: '#52c729'
     },
-
     liftWeight: {
         flex:1,
         flexDirection: 'row',
         justifyContent: 'flex-end',
         alignItems: 'center',
-        // backgroundColor: '#c72929'
     },
     liftWeightInput:{
         textAlign: "right",
         fontSize: 18,
-        color: '#656565',
+        color: textGrey,
         fontSize: 18,
         flex:4,
     },
-
+    didItText: {
+        color: 'white',
+    },
     didItButton: {
         flex: 1,
         flexDirection: 'row',
-        backgroundColor: '#2bcdb1',
-        borderColor: '#1da890',
+        backgroundColor: buttonMain,
+        borderColor: buttonMainOutline,
         borderWidth: 1,
         borderRadius: 8,
         alignSelf: 'stretch',
@@ -249,26 +349,25 @@ var styles = StyleSheet.create({
     doneItButton: {
         flex: 1,
         flexDirection: 'row',
-        backgroundColor: '#2b89cd',
-        borderColor: '#1da890',
+        backgroundColor: buttonDone,
+        borderColor: buttonDoneOutline,
         borderWidth: 1,
         borderRadius: 8,
         alignSelf: 'stretch',
         justifyContent: 'center',
         padding: 5
     },
-
     repInput:{
         textAlign: "right",
         fontSize: 18,
-        color: '#656565',
+        color: textGrey,
         fontSize: 18,
         flex:1,
     },
     repsText: {
         textAlign: "left",
         fontSize: 17,
-        color: '#656565',
+        color: textGrey,
         flex: 2,
     },
     pageContainer:{
@@ -278,52 +377,15 @@ var styles = StyleSheet.create({
         height: 1,
         backgroundColor: '#dddddd'
     },
-
-    saveButton: {
-        height: 36,
-        flex: 2,
-        flexDirection: 'row',
-        backgroundColor: '#2bcdb1',
-        borderColor: '#1da890',
-        borderWidth: 1,
-        borderRadius: 8,
-        alignSelf: 'stretch',
-        justifyContent: 'center',
-        padding: 15,
-        textAlign: "center",
-    },
     infoText:{
         fontSize: 20,
-        color: '#656565',
-    },
-    header:{
-        flexDirection: 'row',
-        // backgroundColor: '#ccebc5',
-        padding:5,
+        color: textGrey,
     },
     title:{
         fontSize: 23,
         fontFamily: "Optima-Bold",
-        color: '#3182bd'
+        color: textBlue
     },
-    buttonText: {
-        fontSize: 18,
-        color: 'white',
-        alignSelf: 'center'
-    },
-    saveButton: {
-        height: 36,
-        flex: 1,
-        flexDirection: 'row',
-        backgroundColor: '#2bcdb1',
-        borderColor: '#1da890',
-        borderWidth: 1,
-        borderRadius: 8,
-        alignSelf: 'stretch',
-        justifyContent: 'center',
-        padding: 15
-    },
-
 });
 
 module.exports = SetView;

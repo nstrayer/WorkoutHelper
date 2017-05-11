@@ -2,6 +2,7 @@
 
 // list of currently loaded workout templates in the dropbox folder.
 
+import {buttonMain, buttonMainOutline, buttonDone, buttonDoneOutline, textGrey, textBlue} from './appColors';
 import React, { Component } from 'react'
 import {
     StyleSheet,
@@ -81,12 +82,6 @@ class RoutineList extends Component{
 }
 
 var styles = StyleSheet.create({
-    resultsList: {
-      marginBottom: 20,
-      fontSize: 18,
-      textAlign: 'center',
-      color: '#80b1d3'
-    },
     rowContainer: {
       flexDirection: 'row',
       padding: 10
@@ -97,7 +92,7 @@ var styles = StyleSheet.create({
     },
     title: {
       fontSize: 20,
-      color: '#656565'
+      color: textGrey
     },
 });
 

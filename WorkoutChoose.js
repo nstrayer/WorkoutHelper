@@ -3,7 +3,7 @@
 // Right now this is literally just a wrapper for the warmup sets stuff
 // In the future it will be the starting point for the whole app with
 // jumping off points for things like which day it is etc.
-
+import {buttonMain, buttonMainOutline, buttonDone, buttonDoneOutline, textGrey, textBlue} from './appColors';
 import React, { Component } from 'react'
 import {
     StyleSheet,
@@ -16,11 +16,9 @@ import {
     Image
 } from 'react-native';
 
-import Dropbox from 'dropbox';
 import RoutineList from './RoutineList';
 import findFiles from './findFiles';
 import downloadFile from './downloadFile';
-import downloadRoutines from './downloadRoutines';
 import deleteFile from './deleteFile';
 import listAvailableRoutines from './dropboxHelpers/listAvailableRoutines';
 import downloadRoutine from './dropboxHelpers/downloadRoutine';
@@ -30,94 +28,89 @@ class WorkoutChoose extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            have_workouts: false,
             header_text: `Let's choose a workout`,
             workout_list: [],
             dbConnection: null,
             token: this.props.token,
-            downloading: false
+            downloading: true
         };
+    }
 
+    componentDidMount() {
         this.checkForWorkouts();
-        // this.grabRoutines()
+        // this.deleteLocalRoutines()
+        //     .then(r => {})
+        //     .catch(err => console.log(error))
     }
 
-    checkForWorkouts(){
-        let localRoutinePaths;
+    async checkForWorkouts(){
+        let rawRoutines;
+        let localRoutinePaths = await findFiles(".json");
 
-        findFiles(".json")
-            .then( results => {
-                if(results.length > 0){
-                    this.downloadWorkouts(results);
-                } else {
-                    this.setState({header_text: "No local routines found, checking dropbox."})
-                    this.getFromDropbox();
-                }
-            })
-            .catch((error) => console.log(error));
-    }
+        if(localRoutinePaths.length > 0){
+            rawRoutines = await this.loadLocalRoutines(localRoutinePaths);
+        } else {
+            //if we didn't find any local routines, let the user know and search for some on dropbox.
+            this.setState({header_text: "Checking Dropbox for routines."});
+            //Download routines from dropbox to local memory
+            const cloudResults = await listAvailableRoutines(this.props.token);
 
-    getFromDropbox(){
-        downloadRoutines()
-            .then(routineData => {
-                //now look for the routines again, they will be there.
-                this.checkForWorkouts();
-            })
-            .catch(function(error) {
-              console.log(error);
-            });
-    }
+            for(let r of cloudResults.entries){
+                await downloadRoutine(r.path_display, r.name)
+            }
 
-    downloadWorkouts(workoutNames){
-        //makes an array of promises with the file contents.
-        let workoutContents = Promise.all( workoutNames.map(workout => downloadFile(workout)) ) ;
+            //Now that we have local files, try grabbing their paths again
+            localRoutinePaths = await findFiles(".json");
 
-        //once our promises return, loop through them and extract their json goodness.
-        workoutContents.then(data => {
-            const parsedWorkouts = data.map(workout => JSON.parse(workout));
-            console.log(parsedWorkouts);
-            this.setState({
-                have_workouts: true,
-                workout_list: parsedWorkouts
-            })
+            if(localRoutinePaths.length < 1) this.setState({header_text: "Somethings gone horribly wrong. Try restarting app."})
+
+            rawRoutines = await this.loadLocalRoutines(localRoutinePaths);
+        }
+        //now we have all the data's set our state.
+        this.setState({
+            downloading: false,
+            workout_list: this.parseRoutines(rawRoutines),
+            header_text: `Let's choose a workout`
         })
     }
 
-    async grabRoutines(){
-        console.log("running grabRoutines")
+    async getFromDropbox(){
 
-        // //set spinner a spinnin'
-        // this.setState({
-        //     downloading: true
-        // });
+        this.setState({
+            downloading: true
+        })
 
-        let localRoutines = await findFiles(".json");
-        console.log("current local routines", localRoutines)
+        //kill all the local workouts. This will need to change once we allow creation of workouts.
+        await this.deleteLocalRoutines();
 
-        let cloudResults = await listAvailableRoutines(this.props.token);
-
-        const cloudRoutines = cloudResults.entries.map(r => r.name);
-
-        await localRoutines
-            .filter(r => !cloudRoutines.includes(r))
-            .forEach(r => deleteFile(r) );
-
-        console.log("deleted local files that were not on dropbox")
-
-        const cloud_not_local =  cloudRoutines .filter(r => !localRoutines.includes(r))
-
-        await cloudResults.entries
-            .filter(r => cloud_not_local.includes(r.name))
-            .forEach(r => downloadRoutine(r.path_display, r.name, this.props.token) );
-
-        console.log("downloaded all the routines that were on dropbox but not local", cloud_not_local)
-
-        //now reload all the routines into memory and update the state variable for routine info.
+        //now rerun the check for workouts function which will default to syncing with dropbox because we have no local routines anymore.
+        await this.checkForWorkouts();
     }
+
+    async deleteLocalRoutines(){
+        const localRoutinePaths = await findFiles(".json");
+
+        await localRoutinePaths.map(r => deleteFile(r))
+        console.log("deleted the following routines from your local storage", localRoutinePaths)
+    }
+
+    async loadLocalRoutines(paths){
+        this.setState({header_text: "Loading routines."})
+        let rawRoutines = [];
+        for (let localRoutinePath of paths){
+            let rawRoutine = await downloadFile(localRoutinePath);
+            rawRoutines.push(rawRoutine)
+        }
+        return(rawRoutines)
+    }
+
+    parseRoutines(stringData){
+        return stringData.map(workout => JSON.parse(workout));
+    };
 
     render() {
 
-        const theList = this.state.downloading || !this.state.have_workouts?
+        const theList = this.state.downloading?
             (<ActivityIndicator size='large'/>):
             (
                 <View>
@@ -139,7 +132,7 @@ class WorkoutChoose extends Component {
                 <View style = {styles.buttonContainer}>
                     <TouchableHighlight
                         style = {styles.downloadButton}
-                        onPress={() => this.grabRoutines()}
+                        onPress={async () => await this.getFromDropbox()}
                         underlayColor='#dddddd'
                     >
                         <Text style = {styles.buttonText}> {`Sync workouts`} </Text>
@@ -166,7 +159,7 @@ var styles = StyleSheet.create({
         marginBottom: 20,
         fontSize: 24,
         textAlign: 'center',
-        color: '#3182bd'
+        color: textBlue
     },
     buttonText: {
         fontSize: 18,
@@ -177,8 +170,8 @@ var styles = StyleSheet.create({
         height: 36,
         flex: 1,
         flexDirection: 'row',
-        backgroundColor: '#48BBEC',
-        borderColor: '#48BBEC',
+        backgroundColor: buttonMain,
+        borderColor: buttonMainOutline,
         borderWidth: 1,
         borderRadius: 8,
         marginBottom: 10,
@@ -196,8 +189,8 @@ var styles = StyleSheet.create({
     downloadButton: {
         height: 50,
         flexDirection: 'row',
-        backgroundColor: '#2bcdb1',
-        borderColor: '#1da890',
+        backgroundColor: buttonMain,
+        borderColor: buttonMainOutline,
         borderWidth: 1,
         borderRadius: 8,
         alignSelf: 'stretch',

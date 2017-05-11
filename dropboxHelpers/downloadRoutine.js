@@ -1,9 +1,9 @@
 'use strict';
 import RNFS from 'react-native-fs';
-
+import {token} from '../Config';
 //give a path of a dropbox json routine to download and it will put it into local storage.
 
-const downloadRoutine = (dbPath, fileName, token) => {
+const downloadRoutine = (dbPath, fileName) => {
     const localPath = `${RNFS.DocumentDirectoryPath}/${fileName}`;
     return (
         RNFS.downloadFile({

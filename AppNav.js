@@ -1,5 +1,5 @@
 'use strict';
-
+import {buttonMain, buttonMainOutline, buttonDone, buttonDoneOutline, textGrey, textBlue} from './appColors';
 import React, { Component } from 'react'
 import {
     StyleSheet,
@@ -52,22 +52,22 @@ class AppNav extends Component{
 
     saveToken(token){
         saveFile("token", token)
-          .then((success) => {
-            console.log('token sent!');
-          })
-          .catch((err) => {
-            console.log(err.message);
-          });
+            .then( success => {
+                console.log('token sent!');
+            })
+            .catch( err => {
+                console.log(err.message);
+            });
     }
 
     removeToken(){
         deleteFile("token")
-          .then((success) => {
-            console.log('token deleted!');
-          })
-          .catch((err) => {
-            console.log(err.message);
-          });
+            .then( success => {
+                console.log('token deleted!');
+            })
+            .catch( err => {
+                console.log(err.message);
+            });
     }
 
     grabDropboxToken(ApiKey){
@@ -178,8 +178,8 @@ const styles = StyleSheet.create({
         height: 36,
         flex: 1,
         alignSelf: 'stretch',
-        backgroundColor: '#2bcdb1',
-        borderColor: '#1da890',
+        backgroundColor: buttonMain,
+        borderColor: buttonMainOutline,
         borderWidth: 1,
         borderRadius: 8,
         marginBottom: 10,
@@ -187,28 +187,16 @@ const styles = StyleSheet.create({
     },
     greetingText: {
         fontSize: 24,
-        color: '#656565',
+        color: textGrey,
     },
     smallerText: {
         fontSize: 18,
-        color: '#656565',
+        color: textGrey,
     },
     buttonText: {
         fontSize: 18,
         color: 'white',
         alignSelf: 'center'
-    },
-    loggedIn:{
-        height: 36,
-        flex: 1,
-        flexDirection: 'row',
-        backgroundColor: 'orangered',
-        borderColor: '#48BBEC',
-        borderWidth: 1,
-        borderRadius: 8,
-        marginBottom: 10,
-        alignSelf: 'stretch',
-        justifyContent: 'center'
     },
 });
 
