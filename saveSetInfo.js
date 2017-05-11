@@ -7,18 +7,17 @@ import RNFS from 'react-native-fs';
 import downloadFile from './downloadFile';
 import deleteFile from './deleteFile';
 import saveFile from './saveFile';
-
+import getDateTime from './getDateTime';
 const saveSetInfo = (setInfo, routineName) => {
 
-    const date = new Date();
-    const dateClean = `${date.getMonth()}-${date.getDate()}-${date.getFullYear()}`;
-    const time = `${date.getHours()}:${date.getMinutes()}`;
+    const {date, time} = getDateTime()
+
     const newResults = {
         lift: setInfo.lift,
         weight: setInfo.weight,
         reps: setInfo.reps,
         setNum: setInfo.setNum,
-        date: dateClean,
+        date: date,
         time: time,
         notes: "lots of notes",
         routine: routineName

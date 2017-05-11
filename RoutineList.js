@@ -56,7 +56,8 @@ class RoutineList extends Component{
             title: "Routine",
             component: RoutineView,
             passProps: {routineData: routineData,
-                        navigator: this.props.navigator
+                        navigator: this.props.navigator,
+                        token: this.props.token,
                        }
         });
     }

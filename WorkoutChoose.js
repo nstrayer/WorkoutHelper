@@ -117,6 +117,7 @@ class WorkoutChoose extends Component {
                     <RoutineList
                         workouts = {this.state.workout_list}
                         navigator = {this.props.navigator}
+                        token = {this.props.token}
                     />
                 </View>
             );

@@ -30,7 +30,7 @@ class SetView extends Component{
         super(props);
 
         //construct an array of objects for each set we're doing.
-        const startSetsInfo = this.makeSetsArray(this.props.liftData,"0");
+        const startliftInfo = this.makeSetsArray(this.props.liftData,"0");
 
         //update rows if their weight changes. This is when the user puts a new
         //overall weight in and we need to update multiple rows at once.
@@ -38,20 +38,55 @@ class SetView extends Component{
             {rowHasChanged: (r1,r2) => r1 !== r2}
         );
 
+
+
+        if(this.props.liftHistory.length > 0){
+            console.log("we found lifts that had been done before.")
+            const currentLiftInfo = startliftInfo;
+            const currentSetNums = currentLiftInfo.map(l => l.setNum);
+            for(let previousSet of this.props.liftHistory){
+                //find if it matches a set number we have here.
+                if(currentSetNums.includes(previousSet.setNum)){
+                    currentLiftInfo.forEach(l => {
+                        if(l.setNum === previousSet.setNum){
+                            l.userChanged= true
+                            l.didIt= true
+                        }
+                    })
+                } else {
+                    //this is an extra set in addition to this one, so append it.
+                    currentLiftInfo.push(
+                        {
+                            setNum: previousSet.setNum,
+                            reps: previousSet.reps,
+                            weight: previousSet.weight,
+                            userChanged: true, //know if the user has changed this value so we to update it or not when changing 1rm later.
+                            didIt: true,
+                            lift: previousSet.lift,
+                        }
+                    )
+                }
+            } //end for loop
+        } else {
+            console.log("this routine has yet to be tried today")
+        }
+
         this.state = {
             setWeight: "0",
-            setsInfo: startSetsInfo,
+            liftInfo: startliftInfo,
             ds: dataSource,
-            dataSource: dataSource.cloneWithRows(startSetsInfo),
+            dataSource: dataSource.cloneWithRows(startliftInfo),
             liftName: this.props.liftName,
-            oneLiftLeft: false,
+            oneLiftLeft: startliftInfo.length === 1,
         }
     }
 
+
+
     makeSetsArray(liftData, weight){
-        let setsInfo = [];
+        let liftInfo = [];
         for(let i = 0; i < liftData.sets; i++){
-            setsInfo.push(
+            liftInfo.push(
                 {
                     setNum: i + 1,
                     reps: liftData.reps,
@@ -62,36 +97,36 @@ class SetView extends Component{
                 }
             );
         }
-        return(setsInfo)
+        return(liftInfo)
     }
 
     newSetWeight(inputWeight,setNum){
-        let newSetInfo = this.state.setsInfo
+        let newSetInfo = this.state.liftInfo
         newSetInfo[setNum - 1].weight = inputWeight;
         newSetInfo[setNum - 1].userChanged = true;
-        this.updateSetsInfo(newSetInfo);
+        this.updateliftInfo(newSetInfo);
     }
 
     newRepNum(inputReps,setNum){
-        let newSetInfo = this.state.setsInfo
+        let newSetInfo = this.state.liftInfo
         newSetInfo[setNum - 1].reps = inputReps;
         newSetInfo[setNum - 1].userChanged = true;
-        this.updateSetsInfo(newSetInfo);
+        this.updateliftInfo(newSetInfo);
     }
 
     //when the user puts in a different overall set weight, update the row data accordingly.
     updateLiftWeight(weight){
         this.setState({liftWeight: weight});
-        let newSetInfo = this.state.setsInfo;
+        let newSetInfo = this.state.liftInfo;
         //if the user hasnt themselves changed a set's weight, modify it to the new overall weight.
         newSetInfo.forEach(set => set.weight = !set.userChanged? weight: set.weight)
-        this.updateSetsInfo(newSetInfo);
+        this.updateliftInfo(newSetInfo);
     }
 
     //updates the set info state variable and also the set's given rows.
-    updateSetsInfo(newSetInfo){
+    updateliftInfo(newSetInfo){
         this.setState({
-            setsInfo: newSetInfo,
+            liftInfo: newSetInfo,
             dataSource: this.state.ds.cloneWithRows(newSetInfo)
         });
     }
@@ -99,35 +134,35 @@ class SetView extends Component{
     //if the user clicks a button to add a set then append another one to the set data
     //We will autofill in its numbers with those from the last current set.
     addSet(){
-        console.log("old set info",this.state.setsInfo)
-        let setsInfo = this.state.setsInfo
-        let lastSet = JSON.parse(JSON.stringify(setsInfo.slice(-1)[0]))
+        console.log("old set info",this.state.liftInfo)
+        let liftInfo = this.state.liftInfo
+        let lastSet = JSON.parse(JSON.stringify(liftInfo.slice(-1)[0]))
         lastSet.userChanged = false
         lastSet.didIt = false
         lastSet.setNum = lastSet.setNum + 1
 
         //append this new set to our set info.
-        setsInfo.push(lastSet)
+        liftInfo.push(lastSet)
 
-        console.log("new set info",setsInfo)
+        console.log("new set info",liftInfo)
 
         this.setState({
-            oneLiftLeft: setsInfo.length === 1,
-            setsInfo: setsInfo,
-            dataSource: this.state.ds.cloneWithRows(setsInfo),
+            oneLiftLeft: liftInfo.length === 1,
+            liftInfo: liftInfo,
+            dataSource: this.state.ds.cloneWithRows(liftInfo),
         })
     }
 
     removeSet(){
         //Make sure we don't accidentally delete the last set.
         if(!this.state.oneLiftLeft){
-            let setsInfo = this.state.setsInfo
-            setsInfo.pop()
+            let liftInfo = this.state.liftInfo
+            liftInfo.pop()
 
             this.setState({
-                oneLiftLeft: setsInfo.length === 1,
-                setsInfo: setsInfo,
-                dataSource: this.state.ds.cloneWithRows(setsInfo),
+                oneLiftLeft: liftInfo.length === 1,
+                liftInfo: liftInfo,
+                dataSource: this.state.ds.cloneWithRows(liftInfo),
             })
         }
 
@@ -137,9 +172,9 @@ class SetView extends Component{
     sendSetInfo(setInfo){
         saveSetInfo(setInfo, this.props.routine)
 
-        let newSetInfo = this.state.setsInfo
+        let newSetInfo = this.state.liftInfo
         newSetInfo[setInfo.setNum - 1].didIt = true;
-        this.updateSetsInfo(newSetInfo);
+        this.updateliftInfo(newSetInfo);
     }
 
     setFooter(){
@@ -214,13 +249,29 @@ class SetView extends Component{
         );
     }
 
+    newLiftName(newLiftName){
+        // console.log("changed the lift name to ", text)
+        let newliftInfo = this.state.liftInfo;
+        newliftInfo.forEach(set => set.lift = newLiftName)
+        console.log("set info for lift ", newliftInfo)
+        this.setState({
+            liftName: newLiftName,
+            liftInfo: newliftInfo
+        })
+    }
+
     render(){
         return(
             <View style = {styles.pageContainer}>
                 <View style={styles.header}>
-                    <Text style={styles.title}>
-                        {this.state.liftName}
-                    </Text>
+                    <TextInput
+                        style={styles.title}
+                        keyboardType = 'default'
+                        multiline = {true}
+                        placeholder = {`${this.state.liftName}`}
+                        placeholderTextColor = {textBlue}
+                        onChangeText = { text => this.newLiftName(text)}
+                    />
                     <View style={styles.liftWeight}>
                         <TextInput
                             style={styles.weightInputHeader}
@@ -242,6 +293,25 @@ class SetView extends Component{
 }
 
 var styles = StyleSheet.create({
+    title:{
+        fontSize: 22,
+        fontFamily: "Optima-Bold",
+        color: textBlue,
+        flex:3,
+    },
+    liftWeight: {
+        flex:3,
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+    },
+    liftWeightInput:{
+        textAlign: "right",
+        fontSize: 18,
+        color: textGrey,
+        fontSize: 18,
+        flex:4,
+    },
     setRow: {
         flex: 1,
         flexDirection: 'row',
@@ -319,19 +389,6 @@ var styles = StyleSheet.create({
         color: textGrey,
         flex: 1,
     },
-    liftWeight: {
-        flex:1,
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-    },
-    liftWeightInput:{
-        textAlign: "right",
-        fontSize: 18,
-        color: textGrey,
-        fontSize: 18,
-        flex:4,
-    },
     didItText: {
         color: 'white',
     },
@@ -380,11 +437,6 @@ var styles = StyleSheet.create({
     infoText:{
         fontSize: 20,
         color: textGrey,
-    },
-    title:{
-        fontSize: 23,
-        fontFamily: "Optima-Bold",
-        color: textBlue
     },
 });
 
