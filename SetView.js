@@ -99,16 +99,20 @@ class SetView extends Component{
 
     warmupSets(){
         const {warmup, setWeight} = this.state;
-        
+
         const warmupMessage = warmup
             .map(s => `${roundToFive(setWeight * (s.percentage/100))}x${s.reps}`)
             .join(", ")
 
-        return (
-            <Text style = {styles.warmupSets}>
-                Warmup: {warmupMessage}
-            </Text>
-        );
+        return warmupMessage.length > 0?
+            (
+                <Text style = {styles.warmupSets}>
+                    Warmup: {warmupMessage}
+                </Text>
+            ):
+            (
+                <View/>
+            )
     }
 
     finishedSet(setInfo){
