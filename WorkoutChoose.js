@@ -19,9 +19,12 @@ import {
 import RoutineList from './RoutineList';
 import findFiles from './findFiles';
 import downloadFile from './downloadFile';
+import saveFile from './saveFile';
+import checkForFile from './checkForFile';
 import deleteFile from './deleteFile';
 import listAvailableRoutines from './dropboxHelpers/listAvailableRoutines';
 import downloadRoutine from './dropboxHelpers/downloadRoutine';
+
 
 class WorkoutChoose extends Component {
 
@@ -30,17 +33,26 @@ class WorkoutChoose extends Component {
         this.state = {
             header_text: `Let's choose a workout`,
             workout_list: [],
-            dbConnection: null,
-            token: this.props.token,
+            history: null,
             downloading: true
         };
     }
 
     componentDidMount() {
-        this.checkForWorkouts();
-        // this.deleteLocalRoutines()
-        //     .then(r => {})
-        //     .catch(err => console.log(error))
+        this.loadData();
+    }
+
+    async loadData(){
+        const routines = await this.checkForWorkouts();
+        const history = await this.checkForHistory();
+
+        //now we have all the data's set our state.
+        this.setState({
+            downloading: false,
+            workout_list: routines,
+            history: JSON.parse(history),
+            header_text: `Let's choose a workout`
+        })
     }
 
     async checkForWorkouts(){
@@ -66,12 +78,24 @@ class WorkoutChoose extends Component {
 
             rawRoutines = await this.loadLocalRoutines(localRoutinePaths);
         }
-        //now we have all the data's set our state.
-        this.setState({
-            downloading: false,
-            workout_list: this.parseRoutines(rawRoutines),
-            header_text: `Let's choose a workout`
-        })
+        return this.parseRoutines(rawRoutines)
+    }
+
+    async checkForHistory(){
+        const resultsFileName = `liftHistory.csv`
+        let history;
+
+        //look for a csv for this routine in the storage.
+        const searchResult = await checkForFile(resultsFileName);
+
+        if(searchResult.length > 0){
+            history = await downloadFile("liftHistory.csv")
+        } else {
+            //no file present, let's make one.
+            await saveFile(resultsFileName, `[]`)
+            history = await downloadFile("liftHistory.csv")
+        }
+        return history;
     }
 
     async getFromDropbox(){
@@ -116,8 +140,8 @@ class WorkoutChoose extends Component {
                 <View>
                     <RoutineList
                         workouts = {this.state.workout_list}
+                        history = {this.state.history}
                         navigator = {this.props.navigator}
-                        token = {this.props.token}
                     />
                 </View>
             );

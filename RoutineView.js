@@ -29,30 +29,7 @@ class RoutineView extends Component{
         this.state = {
             dataSource: dataSource.cloneWithRows(this.props.routineData.days),
             title: this.props.routineData.title,
-            resultsFile: false,
         }
-    }
-
-    componentDidMount(){
-        this.lookForResultsFile();
-    }
-
-    async lookForResultsFile(){
-        const resultsFileName = `liftHistory.csv`
-
-        //look for a csv for this routine in the storage.
-        const searchResult = await checkForFile(resultsFileName);
-
-        if(searchResult.length > 0){
-            console.log("found and loaded a results file")
-            const resultFile = await downloadFile("liftHistory.csv")
-        } else {
-            //no file present, let's make one.
-            console.log("we found no results files, making one now.")
-            await saveFile(resultsFileName, `[{"name": "first record"}]`)
-            console.log("initialized a results file")
-        }
-        this.setState({resultsFile: true})
     }
 
     goToDay(routineData){
@@ -63,7 +40,8 @@ class RoutineView extends Component{
                 routine: this.state.title,
                 id: routineData.id,
                 lifts: routineData.lifts,
-                navigator: this.props.navigator
+                navigator: this.props.navigator,
+                history: this.props.history,
             }
         });
     }

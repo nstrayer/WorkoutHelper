@@ -9,6 +9,7 @@ import {
     Text,
     View,
     TouchableHighlight,
+    ActivityIndicator,
     ListView,
 } from 'react-native';
 import SetView from './SetView';
@@ -16,6 +17,8 @@ import sendHistoryToDropbox from './dropboxHelpers/sendHistoryToDropbox';
 import checkForFile from './checkForFile';
 import downloadFile from './downloadFile';
 import getDateTime from './getDateTime';
+import roundToFive from './roundToFive';
+import updateHistory from './updateHistory';
 
 class DayView extends Component{
     constructor(props){
@@ -25,43 +28,53 @@ class DayView extends Component{
             {rowHasChanged: (r1,r2) => (r1.name !== r2.name)}
         );
 
+        const {date} = getDateTime();
+
         this.state = {
             ds: dataSource,
             dataSource: dataSource.cloneWithRows(this.props.lifts),
             lifts: this.props.lifts,
+            history: null,
+            date: date,
             selected: true,
             dayID: this.props.id,
-            todaysHistory: [],
         }
-        this.lookForResultsFile()
+        this.grabHistory();
     }
 
-    async lookForResultsFile(){
-        const resultsFile = await downloadFile(`liftHistory.csv`)
+    async addNewRecord(newData){
+        let dataToAdd = newData;
 
-        let resultsParsed = JSON.parse(resultsFile)
-        resultsParsed.shift()
+        const {date, time} = getDateTime();
+        dataToAdd.date = date;
+        dataToAdd.time = time;
+        dataToAdd.routine = this.props.routine;
 
-        const routinesLifts = this.state.lifts.map(l => l.name);
+        //send to the file system to update records.
+        const newHistory = await updateHistory(dataToAdd);
 
-        //filter results so we only have the data on lifts done today that are in this routine.
-        const todaysLifts = resultsParsed.filter(lift => routinesLifts.includes(lift.lift))
-
-        this.setState({todaysHistory: todaysLifts})
+        this.setState({history: newHistory})
     }
 
+    async grabHistory(){
+        const rawHistory = await downloadFile(`liftHistory.csv`)
+        this.setState({history: JSON.parse(rawHistory)})
+        console.log("grabbed history records")
+    }
 
     renderLift(liftData) {
-        const liftHistory = this.state.todaysHistory.filter(l => l.lift === liftData.name)
+
+        let liftHistory = this.state.history
+            .filter(s => s.lift === liftData.name && s.date === this.state.date)
+
         return (
             <View>
                 <View style={styles.liftSets}>
                     <SetView
-                        liftName     = {liftData.name}
-                        liftData     = {liftData}
-                        liftHistory  = {liftHistory}
-                        routine      = {this.props.routine}
-                        dbConnection = {this.props.dbConnection}
+                        data    = {liftData}
+                        routine = {this.props.routine}
+                        liftHistory = {liftHistory}
+                        onSavedData = { newData => this.addNewRecord(newData) }
                     />
                 </View>
             </View>
@@ -121,13 +134,18 @@ class DayView extends Component{
     }
 
     render(){
-        return(
-            <View style = {styles.pageContainer}>
+        let loadingHistory = this.state.history == null?
+            (<ActivityIndicator size='large'/>):
+            (
                 <ListView
                     dataSource= {this.state.dataSource}
                     renderRow= {this.renderLift.bind(this)}
                     renderFooter = {this.footer.bind(this)}
                 />
+            );
+        return (
+            <View style = {styles.pageContainer}>
+                {loadingHistory}
             </View>
         )
     }

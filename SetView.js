@@ -24,13 +24,11 @@ import {
     Image
 } from 'react-native';
 import saveSetInfo from './saveSetInfo';
+import roundToFive from './roundToFive';
 
 class SetView extends Component{
     constructor(props){
         super(props);
-
-        //construct an array of objects for each set we're doing.
-        const startliftInfo = this.makeSetsArray(this.props.liftData,"0");
 
         //update rows if their weight changes. This is when the user puts a new
         //overall weight in and we need to update multiple rows at once.
@@ -38,89 +36,126 @@ class SetView extends Component{
             {rowHasChanged: (r1,r2) => r1 !== r2}
         );
 
+        //get out the info stored in our lift info.
+        const {warmup, notes} = this.props.data;
+        let {sets,name} = this.props.data;
 
-
-        if(this.props.liftHistory.length > 0){
-            console.log("we found lifts that had been done before.")
-            const currentLiftInfo = startliftInfo;
-            const currentSetNums = currentLiftInfo.map(l => l.setNum);
-            for(let previousSet of this.props.liftHistory){
-                //find if it matches a set number we have here.
-                if(currentSetNums.includes(previousSet.setNum)){
-                    currentLiftInfo.forEach(l => {
-                        if(l.setNum === previousSet.setNum){
-                            l.userChanged= true
-                            l.didIt= true
-                        }
-                    })
-                } else {
-                    //this is an extra set in addition to this one, so append it.
-                    currentLiftInfo.push(
-                        {
-                            setNum: previousSet.setNum,
-                            reps: previousSet.reps,
-                            weight: previousSet.weight,
-                            userChanged: true, //know if the user has changed this value so we to update it or not when changing 1rm later.
-                            didIt: true,
-                            lift: previousSet.lift,
-                        }
-                    )
-                }
-            } //end for loop
-        } else {
-            console.log("this routine has yet to be tried today")
-        }
+        //add usage info to each set so the ui knows how to deal with the done button
+        sets = this.addUsageInfo(sets);
+        sets = this.fillInToday(sets)
 
         this.state = {
-            setWeight: "0",
-            liftInfo: startliftInfo,
+            name: name,
+            sets: sets,
+            warmup: warmup,
+            notes: notes,
+            setWeight: sets.slice(-1)[0].weight,
+            liftHistory: this.props.liftHistory,
             ds: dataSource,
-            dataSource: dataSource.cloneWithRows(startliftInfo),
-            liftName: this.props.liftName,
-            oneLiftLeft: startliftInfo.length === 1,
+            dataSource: dataSource.cloneWithRows(sets),
+            oneLiftLeft: sets.length === 1,
         }
     }
 
+    fillInToday(sets){
+        let today = this.props.liftHistory;
+        const setNumsSeenToday = today.map(s => s.setNum)
+        const setNumsPrescribed = sets.map(s=>s.setNum)
+        const uniqueSetNums = [...new Set(setNumsSeenToday.concat(setNumsPrescribed))]
 
-
-    makeSetsArray(liftData, weight){
-        let liftInfo = [];
-        for(let i = 0; i < liftData.sets; i++){
-            liftInfo.push(
-                {
-                    setNum: i + 1,
-                    reps: liftData.reps,
+        const newSetsInfo = uniqueSetNums.map( setNum => {
+            //find last entry in the array of the given setNum in case we have duplicates
+            let lastInstance = setNumsSeenToday.lastIndexOf(setNum)
+            if(lastInstance !== -1){
+                //if the set in the uniquely seen sets was in our history, fill it in
+                let {difficulty, reps, setNum, weight} = today[lastInstance]
+                return {
+                    difficulty: difficulty,
+                    reps: reps,
+                    setNum: setNum,
                     weight: weight,
-                    userChanged: false, //know if the user has changed this value so we to update it or not when changing 1rm later.
-                    didIt: false,
-                    lift: liftData.name,
+                    userChanged: true
                 }
-            );
+            } else {
+                //if the history didn't contain the set just fill it in with the prescribed values.
+                return sets[setNumsPrescribed.indexOf(setNum)]
+            }
+
+        })
+        return newSetsInfo;
+    }
+
+    addUsageInfo(sets){
+        //this will eventually check for history info from today
+        sets.forEach(s => {
+            s.difficulty = "NA"
+            s.userChanged = false
+        })
+        return(sets)
+    }
+
+    warmupSets(){
+        const {warmup, setWeight} = this.state;
+        const warmupMessage = warmup
+            .map(s => `${roundToFive(setWeight * (s.percentage/100))}x${s.reps}`)
+            .join(", ")
+
+        return (
+            <Text style = {styles.warmupSets}>
+                Warmup: {warmupMessage}
+            </Text>
+        );
+    }
+
+    finishedSet(setInfo){
+        const {setNum, reps, weight} = setInfo;
+
+        let {sets,name} = this.state;
+
+        sets.forEach(s => {
+            if(s.setNum === setNum && s.difficulty === "NA"){
+                s.difficulty = "done"
+            } else if (s.setNum === setNum && s.difficulty !== "NA") {
+                //if you click on an already done set, undo it.
+                s.difficulty = "NA"
+            }
+        })
+
+        const setResults = {
+            weight: weight,
+            reps: reps,
+            setNum: setNum,
+            lift: name,
+            difficulty: "done",
         }
-        return(liftInfo)
+
+        this.props.onSavedData(setResults)
+        this.updateliftInfo(sets)
     }
 
     newSetWeight(inputWeight,setNum){
-        let newSetInfo = this.state.liftInfo
-        newSetInfo[setNum - 1].weight = inputWeight;
-        newSetInfo[setNum - 1].userChanged = true;
-        this.updateliftInfo(newSetInfo);
+        let sets = this.state.sets
+        sets[setNum - 1].weight = inputWeight;
+        sets[setNum - 1].userChanged = true;
+        this.updateliftInfo(sets)
     }
 
     newRepNum(inputReps,setNum){
-        let newSetInfo = this.state.liftInfo
-        newSetInfo[setNum - 1].reps = inputReps;
-        newSetInfo[setNum - 1].userChanged = true;
-        this.updateliftInfo(newSetInfo);
+        let sets = this.state.sets
+        sets[setNum - 1].reps = inputReps;
+        sets[setNum - 1].userChanged = true;
+        this.updateliftInfo(sets)
     }
 
     //when the user puts in a different overall set weight, update the row data accordingly.
-    updateLiftWeight(weight){
-        this.setState({liftWeight: weight});
-        let newSetInfo = this.state.liftInfo;
+    updateLiftWeight(newWeight){
+        this.setState({setWeight: newWeight});
+        let sets = this.state.sets
         //if the user hasnt themselves changed a set's weight, modify it to the new overall weight.
-        newSetInfo.forEach(set => set.weight = !set.userChanged? weight: set.weight)
-        this.updateliftInfo(newSetInfo);
+        sets.forEach(s => {
+            s.weight = !s.userChanged? newWeight: s.weight
+        })
+        this.updateliftInfo(sets)
     }
 
     //updates the set info state variable and also the set's given rows.
@@ -168,15 +203,6 @@ class SetView extends Component{
 
     }
 
-
-    sendSetInfo(setInfo){
-        saveSetInfo(setInfo, this.props.routine)
-
-        let newSetInfo = this.state.liftInfo
-        newSetInfo[setInfo.setNum - 1].didIt = true;
-        this.updateliftInfo(newSetInfo);
-    }
-
     setFooter(){
         return(
             <View style={styles.footer}>
@@ -203,9 +229,8 @@ class SetView extends Component{
     }
 
     renderSet(setInfo) {
-        const setNum = setInfo.setNum;
-        const repNum = setInfo.reps;
-        const weight = setInfo.weight;
+        const {setNum, reps, weight} = setInfo;
+
         return (
             <View>
                 <View style={styles.setRow}>
@@ -218,7 +243,7 @@ class SetView extends Component{
                         <TextInput
                             style={styles.repInput}
                             keyboardType = 'numeric'
-                            placeholder= {`${repNum}`}
+                            placeholder= {`${reps}`}
                             placeholderTextColor = {textGrey}
                             onChangeText = {(text)=> this.newRepNum(text, setNum)}
                         />
@@ -236,8 +261,8 @@ class SetView extends Component{
                     </View>
 
                     <TouchableHighlight
-                        style = {setInfo.didIt? styles.doneItButton : styles.didItButton}
-                        onPress={() => this.sendSetInfo(setInfo)}
+                        style = {setInfo.difficulty !== "NA"? styles.doneItButton : styles.didItButton}
+                        onPress={() => this.finishedSet(setInfo)}
                         underlayColor='#dddddd'
                     >
                         <Text style = {styles.didItText}> {setInfo.didIt? '✓': 'done'} </Text>
@@ -268,7 +293,7 @@ class SetView extends Component{
                         style={styles.title}
                         keyboardType = 'default'
                         multiline = {true}
-                        placeholder = {`${this.state.liftName}`}
+                        placeholder = {`${this.state.name}`}
                         placeholderTextColor = {textBlue}
                         onChangeText = { text => this.newLiftName(text)}
                     />
@@ -283,8 +308,9 @@ class SetView extends Component{
                     </View>
                 </View>
                 <ListView
-                    dataSource = {this.state.dataSource}
-                    renderRow = {this.renderSet.bind(this)}
+                    dataSource   = {this.state.dataSource}
+                    renderRow    = {this.renderSet.bind(this)}
+                    renderHeader = {this.warmupSets.bind(this)}
                     renderFooter = {this.setFooter.bind(this)}
                 />
             </View>
@@ -298,6 +324,10 @@ var styles = StyleSheet.create({
         fontFamily: "Optima-Bold",
         color: textBlue,
         flex:3,
+    },
+    warmupSets: {
+        fontSize: 15,
+        color: textGrey,
     },
     liftWeight: {
         flex:3,

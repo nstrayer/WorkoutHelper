@@ -34,7 +34,9 @@ class RoutineList extends Component{
         const name = workoutData.title;
 
         return (
-            <TouchableHighlight onPress={() => this.goToRoutine(workoutData)} underlayColor='#dddddd' >
+            <TouchableHighlight
+                onPress={() => this.goToRoutine(workoutData)}
+                underlayColor='#dddddd' >
                 <View>
                     <View style={styles.rowContainer}>
                         <View style={styles.textContainer}>
@@ -55,10 +57,11 @@ class RoutineList extends Component{
         this.props.navigator.push({
             title: "Routine",
             component: RoutineView,
-            passProps: {routineData: routineData,
-                        navigator: this.props.navigator,
-                        token: this.props.token,
-                       }
+            passProps: {
+                routineData: routineData,
+                navigator: this.props.navigator,
+                history: this.props.history,
+            }
         });
     }
 

@@ -38,14 +38,14 @@ class AppNav extends Component{
 
     checkForToken(){
         downloadFile("token")
-            .then((token) => {
-                console.log("we found a token", token)
+            .then( token => {
+                console.log("User is logged in")
                 this.setState({
                     token: token,
                     loggedIn: true
                 });
             })
-            .catch((err) => {
+            .catch( err => {
                 console.log(err.message, err.code);
             });
     }
