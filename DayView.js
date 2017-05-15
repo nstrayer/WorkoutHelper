@@ -19,6 +19,7 @@ import downloadFile from './downloadFile';
 import getDateTime from './getDateTime';
 import roundToFive from './roundToFive';
 import updateHistory from './updateHistory';
+import saveFile from './saveFile';
 
 class DayView extends Component{
     constructor(props){
@@ -57,9 +58,14 @@ class DayView extends Component{
     }
 
     async grabHistory(){
-        const rawHistory = await downloadFile(`liftHistory.csv`)
-        this.setState({history: JSON.parse(rawHistory)})
-        console.log("grabbed history records")
+        try {
+            const rawHistory = await downloadFile(`liftHistory.csv`)
+            this.setState({history: JSON.parse(rawHistory)})
+        } catch(error){
+            console.log("seems we don't have a lift history file, let's make one")
+            await saveFile(`liftHistory.csv`, "[]")
+            this.setState({history: []})
+        }
     }
 
     renderLift(liftData) {

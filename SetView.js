@@ -55,9 +55,6 @@ class SetView extends Component{
             dataSource: dataSource.cloneWithRows(sets),
             oneLiftLeft: sets.length === 1,
         }
-
-        console.log("data for lift", name)
-        console.table(warmup)
     }
 
     fillInToday(sets){
