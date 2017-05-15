@@ -71,7 +71,7 @@ class DayView extends Component{
     renderLift(liftData) {
 
         let liftHistory = this.state.history
-            .filter(s => s.lift === liftData.name && s.date === this.state.date)
+            .filter(s => s.lift === liftData.name)
 
         return (
             <View>

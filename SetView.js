@@ -25,7 +25,7 @@ import {
 } from 'react-native';
 import saveSetInfo from './saveSetInfo';
 import roundToFive from './roundToFive';
-
+import getDateTime from './getDateTime'
 class SetView extends Component{
     constructor(props){
         super(props);
@@ -49,16 +49,24 @@ class SetView extends Component{
             sets: sets,
             warmup: warmup,
             notes: notes,
-            setWeight: sets.slice(-1)[0].weight,
+            setWeight: this.getLastSetWeight(),
             liftHistory: this.props.liftHistory,
             ds: dataSource,
             dataSource: dataSource.cloneWithRows(sets),
             oneLiftLeft: sets.length === 1,
         }
+
     }
 
+    // componentDidMount(){
+    //     //fill in the set weight with the last value the user lifted for this lift and routine.
+    //     this.getLastSetWeight()
+    // }
+
     fillInToday(sets){
-        let today = this.props.liftHistory;
+        let today = this.props.liftHistory
+            .filter(s => s.date === getDateTime().date)
+
         const setNumsSeenToday = today.map(s => s.setNum)
         const setNumsPrescribed = sets.map(s=>s.setNum)
         const uniqueSetNums = [...new Set(setNumsSeenToday.concat(setNumsPrescribed))]
@@ -83,6 +91,13 @@ class SetView extends Component{
 
         })
         return newSetsInfo;
+    }
+
+    getLastSetWeight(){
+        const {liftHistory} = this.props
+        const newSetWeight = liftHistory.length > 0 ? this.props.liftHistory.slice(-1)[0].weight: "0"
+        console.log("new set weight", newSetWeight)
+        return newSetWeight
     }
 
     addUsageInfo(sets){
@@ -306,7 +321,7 @@ class SetView extends Component{
                         <TextInput
                             style={styles.weightInputHeader}
                             keyboardType = 'numeric'
-                            placeholder= "set weight"
+                            placeholder= {this.state.setWeight}
                             onChangeText = {(text) => this.updateLiftWeight(text)}
                         />
                         <Text style = {styles.poundTextHeader}> lbs </Text>
