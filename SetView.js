@@ -55,6 +55,9 @@ class SetView extends Component{
             dataSource: dataSource.cloneWithRows(sets),
             oneLiftLeft: sets.length === 1,
         }
+
+        console.log("data for lift", name)
+        console.table(warmup)
     }
 
     fillInToday(sets){
@@ -96,6 +99,7 @@ class SetView extends Component{
 
     warmupSets(){
         const {warmup, setWeight} = this.state;
+        
         const warmupMessage = warmup
             .map(s => `${roundToFive(setWeight * (s.percentage/100))}x${s.reps}`)
             .join(", ")

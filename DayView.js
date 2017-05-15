@@ -172,7 +172,8 @@ var styles = StyleSheet.create({
         alignSelf: 'center'
     },
     pageContainer:{
-        flex: 1
+        flex: 1,
+        paddingTop: 65,
     },
     resultsList: {
         marginBottom: 20,

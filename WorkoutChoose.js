@@ -33,7 +33,6 @@ class WorkoutChoose extends Component {
         this.state = {
             header_text: `Let's choose a workout`,
             workout_list: [],
-            history: null,
             downloading: true
         };
     }
@@ -44,13 +43,11 @@ class WorkoutChoose extends Component {
 
     async loadData(){
         const routines = await this.checkForWorkouts();
-        const history = await this.checkForHistory();
 
         //now we have all the data's set our state.
         this.setState({
             downloading: false,
             workout_list: routines,
-            history: JSON.parse(history),
             header_text: `Let's choose a workout`
         })
     }
@@ -79,23 +76,6 @@ class WorkoutChoose extends Component {
             rawRoutines = await this.loadLocalRoutines(localRoutinePaths);
         }
         return this.parseRoutines(rawRoutines)
-    }
-
-    async checkForHistory(){
-        const resultsFileName = `liftHistory.csv`
-        let history;
-
-        //look for a csv for this routine in the storage.
-        const searchResult = await checkForFile(resultsFileName);
-
-        if(searchResult.length > 0){
-            history = await downloadFile("liftHistory.csv")
-        } else {
-            //no file present, let's make one.
-            await saveFile(resultsFileName, `[]`)
-            history = await downloadFile("liftHistory.csv")
-        }
-        return history;
     }
 
     async getFromDropbox(){
