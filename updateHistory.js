@@ -8,9 +8,7 @@ import deleteFile from './fsHelpers/deleteFile';
 import saveFile from './fsHelpers/saveFile';
 
 async function updateHistory(newRecords){
-    const oldResults = await downloadFile(`liftHistory.csv`)
-
-    let results = JSON.parse(oldResults);
+    let results = JSON.parse(await downloadFile(`liftHistory.csv`))
 
     //add new results
     results.push(newRecords)

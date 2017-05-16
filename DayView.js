@@ -38,7 +38,9 @@ class DayView extends Component{
             dayID: this.props.id,
             loading: true
         }
+    }
 
+    componentDidMount(){
         //go into history and grab all our info for this routine.
         this.grabHistory();
     }
@@ -59,11 +61,18 @@ class DayView extends Component{
                 })
                 .value()
 
-            //fill in weights for sets based upon last lifts.
-            lastLiftWeights.forEach( lift => {
-                //find lift in routine that applies to this lift
-                defaultLifts.forEach(l => l.weight = l.name === lift.name? lift.weight: "0")
-            })
+            //default all the weights to 0
+            defaultLifts.forEach(r => r.weight = "0")
+            for(let record of lastLiftWeights){
+                let {name, weight} = record;
+
+                //find where we have a match if we do...
+                let indexInDefaults = _.findIndex(defaultLifts, lift => lift.name === name);
+
+                if(indexInDefaults !== -1){
+                    defaultLifts[indexInDefaults].weight = weight
+                }
+            }
 
             const doneToday = history.filter(set => set.routine === routine && set.date === date)
 
@@ -75,7 +84,6 @@ class DayView extends Component{
         } catch(error){
             // console.log("seems we don't have a lift history file, let's make one")
             // await saveFile(`liftHistory.csv`, "[]")
-            // this.setState({history: []})
         }
     }
 
@@ -90,9 +98,8 @@ class DayView extends Component{
         //send to the file system to update records.
         const newHistory = await updateHistory(dataToAdd);
 
-        this.setState({history: newHistory})
+        this.grabHistory()
     }
-
 
 
     renderLift(liftData) {

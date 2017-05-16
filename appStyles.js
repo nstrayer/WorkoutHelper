@@ -28,7 +28,7 @@ const mainStyles = StyleSheet.create({
         borderColor: colors.buttonMainOutline,
         borderWidth: 1,
         borderRadius: 5,
-        marginBottom: 10,
+        // marginBottom: 10,
         justifyContent: 'center'
     },
     buttonText: {
