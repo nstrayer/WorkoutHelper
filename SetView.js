@@ -159,17 +159,17 @@ class SetView extends Component{
 
     removeSet(){
         //Make sure we don't accidentally delete the last set.
-        if(!this.state.oneLiftLeft){
+        let sets = this.state.sets
+        if(sets.length > 1){
             let sets = this.state.sets
             sets.pop()
-
             this.setState({
-                oneLiftLeft: sets.length === 1,
                 sets: sets,
                 dataSource: this.state.ds.cloneWithRows(sets),
             })
+        } else {
+            this.props.deleteLastSet(this.state.name)
         }
-
     }
 
     setFooter(){

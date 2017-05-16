@@ -22,23 +22,26 @@ import getDateTime from './getDateTime';
 import updateHistory from './updateHistory';
 import saveFile from './fsHelpers/saveFile';
 
+
+const ds = new ListView.DataSource(
+    {rowHasChanged: (r1,r2) => r1 !== r2}
+);
+
 class DayView extends Component{
     constructor(props){
         super(props);
 
-        //info for the list of lifts.
-        var dataSource = new ListView.DataSource(
-            {rowHasChanged: (r1,r2) => (r1.name !== r2.name)}
-        );
+        const {id} = this.props;
+        this.lifts = this.props.lifts;
 
         this.state = {
-            ds: dataSource,
-            dataSource: dataSource.cloneWithRows(this.props.lifts),
-            lifts: this.props.lifts,
-            dayID: this.props.id,
+            dataSource: ds.cloneWithRows(this.lifts),
+            lifts: this.lifts,
+            dayID: id,
             loading: true
         }
     }
+
 
     componentDidMount(){
         //go into history and grab all our info for this routine.
@@ -74,11 +77,11 @@ class DayView extends Component{
                 }
             }
 
-            //if we want persistance to go beyond just navigating between lifts, start here. 
+            //if we want persistance to go beyond just navigating between lifts, start here.
             // const doneToday = history.filter(set => set.routine === routine && set.date === date)
 
             this.setState({
-                dataSource: this.state.ds.cloneWithRows(defaultLifts),
+                dataSource: ds.cloneWithRows(defaultLifts),
                 lifts: defaultLifts,
                 loading: false
             })
@@ -108,9 +111,10 @@ class DayView extends Component{
             <View>
                 <View style={styles.liftSets}>
                     <SetView
-                        data        = {liftData}
-                        routine     = {this.props.routine}
-                        onSavedData = { newData => this.addNewRecord(newData) }
+                        data          = {liftData}
+                        routine       = {this.props.routine}
+                        onSavedData   = { newData => this.addNewRecord(newData) }
+                        deleteLastSet = { liftName => this.deleteLift(liftName)}
                     />
                 </View>
             </View>
@@ -127,20 +131,30 @@ class DayView extends Component{
         this.props.navigator.pop()
     }
 
-    addLift(){
-        let lifts = this.state.lifts;
-        lifts.push({
-            name: "My New Lift",
-            percentage: 100,
-            reps: 10,
-            sets: 1,
-        })
+    deleteLift(liftName){
+        _.remove(this.lifts, l => l.name === liftName)
 
+        const newLifts = this.lifts;
+        console.table(newLifts)
         this.setState({
-            dataSource: this.state.ds.cloneWithRows(lifts),
+            dataSource: ds.cloneWithRows(newLifts),
+        })
+    }
+
+    addLift(){
+        let lifts = this.lifts;
+        lifts.push({
+            name: "New Lift",
+            notes: "",
+            sets: [
+                {reps: 5, setNum: 1, weight: "0"}
+            ],
+            warmup: [],
+            weight: "0"
+        })
+        this.setState({
+            dataSource: ds.cloneWithRows(lifts),
             lifts: lifts,
-            selected: true,
-            dayID: this.props.id,
         });
         console.log("running add lift", lifts)
     }
@@ -176,8 +190,8 @@ class DayView extends Component{
             (<ActivityIndicator size='large'/>):
             (
                 <ListView
-                    dataSource= {this.state.dataSource}
-                    renderRow= {this.renderLift.bind(this)}
+                    dataSource = {this.state.dataSource}
+                    renderRow = {this.renderLift.bind(this)}
                     renderFooter = {this.footer.bind(this)}
                 />
             );
