@@ -40,6 +40,21 @@ const mainStyles = StyleSheet.create({
         fontSize: 24,
         color: colors.textBlue,
     },
+    boldTitle: {
+      fontSize: 20,
+      fontWeight: "bold",
+      color: colors.textGrey
+    },
+    description: {
+        fontSize: 14,
+        color: colors.textGrey
+    },
+    padded: {
+        padding: 15,
+    },
+    centerTitle:{
+        textAlign: 'center'
+    }
 });
 
 module.exports = {

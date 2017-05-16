@@ -130,19 +130,19 @@ class WorkoutChoose extends Component {
                 <View>
                     <RoutineList
                         workouts = {this.state.workout_list}
-                        history = {this.state.history}
                         navigator = {this.props.navigator}
                     />
+                    <View style = {mainStyles.padded}/>
                 </View>
             );
 
         return (
-            <View style = {[mainStyles.container, styles.padded]}>
+            <View style = {[mainStyles.container, mainStyles.padded]}>
                 <ScrollView>
-                    <Text style = {mainStyles.largeText}>
+                    <Text style =  {[mainStyles.largeText, mainStyles.centerTitle]}>
                       {this.state.header_text}
                     </Text>
-                    <View style = {styles.padded}/>
+                    <View style = {mainStyles.padded}/>
                     {theList}
                 </ScrollView>
                 <View style = {styles.buttonContainer}>
@@ -164,15 +164,6 @@ var styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         alignSelf: 'stretch'
-    },
-    padded: {
-        padding: 15,
-    },
-    description: {
-        marginBottom: 20,
-        fontSize: 24,
-        textAlign: 'center',
-        color: colors.textBlue
     },
     buttonContainer:{
         flex: 1,

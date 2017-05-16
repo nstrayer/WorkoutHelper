@@ -1,7 +1,6 @@
 'use strict';
 //Takes a json object defining a routine and displays a list of the days for given routine
 
-import {buttonMain, buttonMainOutline, buttonDone, buttonDoneOutline, textGrey, textBlue} from './appColors';
 import React, { Component } from 'react'
 import {
     StyleSheet,
@@ -13,10 +12,8 @@ import {
     ListView,
     Image
 } from 'react-native';
+import {colors, mainStyles}  from './appStyles.js'
 import DayView from './DayView';
-import saveFile from './fsHelpers/saveFile';
-import checkForFile from './checkForFile';
-import downloadFile from './fsHelpers/downloadFile';
 
 class RoutineView extends Component{
     constructor(props){
@@ -40,8 +37,7 @@ class RoutineView extends Component{
                 routine: this.state.title,
                 id: routineData.id,
                 lifts: routineData.lifts,
-                navigator: this.props.navigator,
-                history: this.props.history,
+                navigator: this.props.navigator
             }
         });
     }
@@ -58,10 +54,10 @@ class RoutineView extends Component{
                 <View>
                     <View style={styles.rowContainer}>
                         <View style={styles.textContainer}>
-                            <Text style={styles.title}>
+                            <Text style={mainStyles.boldTitle}>
                                 Day {dayID}
                             </Text>
-                            <Text>
+                            <Text style={mainStyles.description}>
                                 {lifts}
                             </Text>
                         </View>
@@ -72,15 +68,23 @@ class RoutineView extends Component{
         );
     }
 
-    render(){
+    routineName(){
         return(
-            <View style = {styles.days}>
-                <Text style = {styles.title}>
+            <View>
+                <Text style = {[mainStyles.largeText, mainStyles.centerTitle]}>
                     {this.state.title}
                 </Text>
+            </View>
+        )
+    }
+
+    render(){
+        return(
+            <View style = {[mainStyles.container, mainStyles.padded]}>
                 <ListView
                     dataSource={this.state.dataSource}
                     renderRow={this.renderDay.bind(this)}
+                    renderHeader={this.routineName.bind(this)}
                 />
             </View>
         );
@@ -88,9 +92,6 @@ class RoutineView extends Component{
 }
 
 var styles = StyleSheet.create({
-    days:{
-        flex: 1
-    },
     rowContainer: {
         flexDirection: 'row',
         padding: 10
@@ -101,7 +102,7 @@ var styles = StyleSheet.create({
     },
     title: {
         fontSize: 20,
-        color: textBlue
+        color: colors.textBlue
     },
 });
 

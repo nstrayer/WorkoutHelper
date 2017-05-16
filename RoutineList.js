@@ -1,7 +1,7 @@
 'use strict';
 // list of currently loaded workout templates in the dropbox folder.
 
-import {buttonMain, buttonMainOutline, buttonDone, buttonDoneOutline, textGrey, textBlue} from './appColors';
+import {colors, mainStyles}  from './appStyles.js'
 import React, { Component } from 'react'
 import {
     StyleSheet,
@@ -31,6 +31,7 @@ class RoutineList extends Component{
 
     renderWorkout(workoutData) {
         const name = workoutData.title;
+        const description = workoutData.description;
 
         return (
             <TouchableHighlight
@@ -39,8 +40,11 @@ class RoutineList extends Component{
                 <View>
                     <View style={styles.rowContainer}>
                         <View style={styles.textContainer}>
-                            <Text style={styles.title}>
+                            <Text style={mainStyles.boldTitle}>
                                 {name}
+                            </Text>
+                            <Text style={mainStyles.description}>
+                                {description}
                             </Text>
                         </View>
                     </View>
@@ -58,8 +62,7 @@ class RoutineList extends Component{
             component: RoutineView,
             passProps: {
                 routineData: routineData,
-                navigator: this.props.navigator,
-                history: this.props.history,
+                navigator: this.props.navigator
             }
         });
     }
@@ -92,10 +95,6 @@ var styles = StyleSheet.create({
     separator: {
       height: 1,
       backgroundColor: '#dddddd'
-    },
-    title: {
-      fontSize: 20,
-      color: textGrey
     },
 });
 
