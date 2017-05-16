@@ -49,12 +49,20 @@ const mainStyles = StyleSheet.create({
         fontSize: 14,
         color: colors.textGrey
     },
+    mediumText:{
+        fontSize: 18,
+        color: colors.textGrey
+    },
     padded: {
         padding: 15,
     },
     centerTitle:{
         textAlign: 'center'
-    }
+    },
+    separator: {
+        height: 1,
+        backgroundColor: '#dddddd'
+    },
 });
 
 module.exports = {

@@ -23,6 +23,7 @@ import {
     ListView,
     Image
 } from 'react-native';
+import {colors, mainStyles}  from './appStyles.js'
 import saveSetInfo from './saveSetInfo';
 import roundToFive from './roundToFive';
 import getDateTime from './getDateTime'
@@ -38,137 +39,35 @@ class SetView extends Component{
         );
 
         //get out the info stored in our lift info.
-        const {warmup, notes} = this.props.data;
-        let {sets,name} = this.props.data;
-
-        //add usage info to each set so the ui knows how to deal with the done button
-        sets = this.addUsageInfo(sets);
-        sets = this.fillInToday(sets)
+        const {
+            name,
+            notes,
+            sets,
+            warmup,
+            weight,
+        } = this.props.data;
 
         this.state = {
             name: name,
             sets: sets,
             warmup: warmup,
             notes: notes,
-            setWeight: this.getLastSetWeight(),
-            liftHistory: this.props.liftHistory,
+            setWeight: weight,
             ds: dataSource,
             dataSource: dataSource.cloneWithRows(sets),
-            oneLiftLeft: sets.length === 1,
         }
 
     }
 
-    // componentDidMount(){
-    //     //fill in the set weight with the last value the user lifted for this lift and routine.
-    //     this.getLastSetWeight()
-    // }
 
-    fillInToday(sets){
-        let today = this.props.liftHistory
-            .filter(s => s.date === getDateTime().date)
-
-        const setNumsSeenToday = today.map(s => s.setNum)
-        const setNumsPrescribed = sets.map(s=>s.setNum)
-        const uniqueSetNums = [...new Set(setNumsSeenToday.concat(setNumsPrescribed))]
-
-        const newSetsInfo = uniqueSetNums.map( setNum => {
-            //find last entry in the array of the given setNum in case we have duplicates
-            let lastInstance = setNumsSeenToday.lastIndexOf(setNum)
-            if(lastInstance !== -1){
-                //if the set in the uniquely seen sets was in our history, fill it in
-                let {difficulty, reps, setNum, weight} = today[lastInstance]
-                return {
-                    difficulty: difficulty,
-                    reps: reps,
-                    setNum: setNum,
-                    weight: weight,
-                    userChanged: true
-                }
-            } else {
-                //if the history didn't contain the set just fill it in with the prescribed values.
-                return sets[setNumsPrescribed.indexOf(setNum)]
-            }
-
-        })
-        return newSetsInfo;
+    //updates the set info state variable and also the set's given rows.
+    updateliftInfo(newSetInfo){
+        this.setState({
+            liftInfo: newSetInfo,
+            dataSource: this.state.ds.cloneWithRows(newSetInfo)
+        });
     }
 
-    getLastSetWeight(){
-        const {liftHistory} = this.props
-        const newSetWeight = liftHistory.length > 0 ? this.props.liftHistory.slice(-1)[0].weight: "0"
-        console.log("new set weight", newSetWeight)
-        return newSetWeight
-    }
-
-    addUsageInfo(sets){
-        //this will eventually check for history info from today
-        sets.forEach(s => {
-            s.difficulty = "NA"
-            s.userChanged = false
-        })
-        return(sets)
-    }
-
-    warmupSets(){
-        const {warmup, setWeight} = this.state;
-
-        const warmupMessage = warmup
-            .map(s => `${roundToFive(setWeight * (s.percentage/100))}x${s.reps}`)
-            .join(", ")
-
-        return warmupMessage.length > 0?
-            (
-                <Text style = {styles.warmupSets}>
-                    Warmup: {warmupMessage}
-                </Text>
-            ):
-            (
-                <View/>
-            )
-    }
-
-    finishedSet(setInfo){
-        const {setNum, reps, weight} = setInfo;
-
-        let {sets,name} = this.state;
-
-        sets.forEach(s => {
-            if(s.setNum === setNum && s.difficulty === "NA"){
-                s.difficulty = "done"
-            } else if (s.setNum === setNum && s.difficulty !== "NA") {
-                //if you click on an already done set, undo it.
-                s.difficulty = "NA"
-            }
-        })
-
-        const setResults = {
-            weight: weight,
-            reps: reps,
-            setNum: setNum,
-            lift: name,
-            difficulty: "done",
-        }
-
-        this.props.onSavedData(setResults)
-        this.updateliftInfo(sets)
-    }
-
-    newSetWeight(inputWeight,setNum){
-        let sets = this.state.sets
-        sets[setNum - 1].weight = inputWeight;
-        sets[setNum - 1].userChanged = true;
-        this.updateliftInfo(sets)
-    }
-
-    newRepNum(inputReps,setNum){
-        let sets = this.state.sets
-        sets[setNum - 1].reps = inputReps;
-        sets[setNum - 1].userChanged = true;
-        this.updateliftInfo(sets)
-    }
-
-    //when the user puts in a different overall set weight, update the row data accordingly.
     updateLiftWeight(newWeight){
         this.setState({setWeight: newWeight});
         let sets = this.state.sets
@@ -179,74 +78,146 @@ class SetView extends Component{
         this.updateliftInfo(sets)
     }
 
-    //updates the set info state variable and also the set's given rows.
-    updateliftInfo(newSetInfo){
-        this.setState({
-            liftInfo: newSetInfo,
-            dataSource: this.state.ds.cloneWithRows(newSetInfo)
-        });
+    newRepNum(inputReps,setNum){
+        let sets = this.state.sets
+        sets[setNum - 1].reps = inputReps;
+        sets[setNum - 1].userChanged = true;
+        this.updateliftInfo(sets)
     }
 
-    //if the user clicks a button to add a set then append another one to the set data
-    //We will autofill in its numbers with those from the last current set.
-    addSet(){
-        console.log("old set info",this.state.liftInfo)
-        let liftInfo = this.state.liftInfo
-        let lastSet = JSON.parse(JSON.stringify(liftInfo.slice(-1)[0]))
-        lastSet.userChanged = false
-        lastSet.didIt = false
-        lastSet.setNum = lastSet.setNum + 1
-
-        //append this new set to our set info.
-        liftInfo.push(lastSet)
-
-        console.log("new set info",liftInfo)
-
-        this.setState({
-            oneLiftLeft: liftInfo.length === 1,
-            liftInfo: liftInfo,
-            dataSource: this.state.ds.cloneWithRows(liftInfo),
-        })
+    newSetWeight(inputWeight,setNum){
+        let sets = this.state.sets
+        sets[setNum - 1].weight = inputWeight;
+        sets[setNum - 1].userChanged = true;
+        this.updateliftInfo(sets)
     }
 
-    removeSet(){
-        //Make sure we don't accidentally delete the last set.
-        if(!this.state.oneLiftLeft){
-            let liftInfo = this.state.liftInfo
-            liftInfo.pop()
+    newSetCompletion(difficulty, setNum){
+        let sets = this.state.sets
+        sets[setNum - 1].difficulty = difficulty;
+        sets[setNum - 1].userChanged = difficulty === "NA"? false: true;
+        console.log("logged lift as",difficulty,sets[setNum - 1].userChanged )
+        this.updateliftInfo(sets)
+    }
 
-            this.setState({
-                oneLiftLeft: liftInfo.length === 1,
-                liftInfo: liftInfo,
-                dataSource: this.state.ds.cloneWithRows(liftInfo),
-            })
+    // componentDidMount(){
+    //     //fill in the set weight with the last value the user lifted for this lift and routine.
+    //     this.getLastSetWeight()
+    // }
+
+
+    finishedSet(setInfo, setDifficulty = "done"){
+        let {name, sets} = this.state;
+        //if they've done this set before then undo their effort.
+        setInfo.difficulty = ["done", "easy", "hard"].includes(setInfo.difficulty)?"NA": setDifficulty
+        const {setNum, reps, weight,difficulty} = setInfo;
+
+        const setResults = {
+            lift: name,
+            weight: weight,
+            reps: reps,
+            difficulty: difficulty,
+            setNum: setNum,
         }
 
+        this.props.onSavedData(setResults)
+        this.newSetCompletion(difficulty,setNum)
     }
 
-    setFooter(){
-        return(
-            <View style={styles.footer}>
-                <View style = {styles.setChange}>
-                    <TouchableHighlight
-                        style = {styles.addRemoveButton}
-                        onPress={() => this.addSet()}
-                        underlayColor='#dddddd'
-                    >
-                        <Text style = {styles.addRemoveText}> add set </Text>
-                    </TouchableHighlight>
+
+
+    // //if the user clicks a button to add a set then append another one to the set data
+    // //We will autofill in its numbers with those from the last current set.
+    // addSet(){
+    //     console.log("old set info",this.state.liftInfo)
+    //     let liftInfo = this.state.liftInfo
+    //     let lastSet = JSON.parse(JSON.stringify(liftInfo.slice(-1)[0]))
+    //     lastSet.userChanged = false
+    //     lastSet.didIt = false
+    //     lastSet.setNum = lastSet.setNum + 1
+    //
+    //     //append this new set to our set info.
+    //     liftInfo.push(lastSet)
+    //
+    //     console.log("new set info",liftInfo)
+    //
+    //     this.setState({
+    //         oneLiftLeft: liftInfo.length === 1,
+    //         liftInfo: liftInfo,
+    //         dataSource: this.state.ds.cloneWithRows(liftInfo),
+    //     })
+    // }
+    //
+    // removeSet(){
+    //     //Make sure we don't accidentally delete the last set.
+    //     if(!this.state.oneLiftLeft){
+    //         let liftInfo = this.state.liftInfo
+    //         liftInfo.pop()
+    //
+    //         this.setState({
+    //             oneLiftLeft: liftInfo.length === 1,
+    //             liftInfo: liftInfo,
+    //             dataSource: this.state.ds.cloneWithRows(liftInfo),
+    //         })
+    //     }
+    //
+    // }
+    //
+    // setFooter(){
+    //     return(
+    //         <View style={styles.footer}>
+    //             <View style = {styles.setChange}>
+    //                 <TouchableHighlight
+    //                     style = {styles.addRemoveButton}
+    //                     onPress={() => this.addSet()}
+    //                     underlayColor='#dddddd'
+    //                 >
+    //                     <Text style = {styles.addRemoveText}> add set </Text>
+    //                 </TouchableHighlight>
+    //             </View>
+    //             <View style = {styles.setChange}>
+    //                 <TouchableHighlight
+    //                     style = {this.state.oneLiftLeft? styles.disabledButton: styles.addRemoveButton}
+    //                     onPress={() => this.removeSet()}
+    //                     underlayColor='#dddddd'
+    //                 >
+    //                     <Text style = {styles.addRemoveText}> remove set </Text>
+    //                 </TouchableHighlight>
+    //             </View>
+    //         </View>
+    //     )
+    // }
+    //
+
+    // newLiftName(newLiftName){
+    //     // console.log("changed the lift name to ", text)
+    //     let newliftInfo = this.state.liftInfo;
+    //     newliftInfo.forEach(set => set.lift = newLiftName)
+    //     console.log("set info for lift ", newliftInfo)
+    //     this.setState({
+    //         liftName: newLiftName,
+    //         liftInfo: newliftInfo
+    //     })
+    // }
+
+    warmupSets(){
+        const {warmup, setWeight} = this.state;
+
+        const warmupMessage = warmup
+            .map(s => `${roundToFive(+setWeight * (s.percentage/100))}x${s.reps}`)
+            .join(", ")
+
+        return warmupMessage.length > 0?
+            (
+                <View>
+                    <Text style = {[styles.warmupSets, {paddingVertical: 8}]}>
+                        Warmup: {warmupMessage}
+                    </Text>
                 </View>
-                <View style = {styles.setChange}>
-                    <TouchableHighlight
-                        style = {this.state.oneLiftLeft? styles.disabledButton: styles.addRemoveButton}
-                        onPress={() => this.removeSet()}
-                        underlayColor='#dddddd'
-                    >
-                        <Text style = {styles.addRemoveText}> remove set </Text>
-                    </TouchableHighlight>
-                </View>
-            </View>
-        )
+            ):
+            (
+                <View/>
+            )
     }
 
     renderSet(setInfo) {
@@ -255,84 +226,67 @@ class SetView extends Component{
         return (
             <View>
                 <View style={styles.setRow}>
-                    <View style = {styles.setInfo}>
-                        <Text style={styles.infoText}>
-                            Set {setNum}
-                        </Text>
-                    </View>
-                    <View style={styles.repsInfo}>
+                    <View style={styles.inputWrap}>
                         <TextInput
-                            style={styles.repInput}
+                            style={styles.input}
                             keyboardType = 'numeric'
                             placeholder= {`${reps}`}
                             placeholderTextColor = {textGrey}
                             onChangeText = {(text)=> this.newRepNum(text, setNum)}
                         />
-                        <Text style = {styles.repsText}> reps </Text>
+                        <Text style = {[styles.mediumText, styles.inputLabel]}> reps </Text>
                     </View>
-                    <View style={styles.weightInfo}>
+                    <View style={styles.inputWrap}>
                         <TextInput
-                            style={styles.weightInput}
+                            style={styles.input}
                             keyboardType = 'numeric'
                             placeholder = {`${weight}`}
                             placeholderTextColor = {textGrey}
                             onChangeText = {(text)=> this.newSetWeight(text, setNum)}
                         />
-                        <Text style = {styles.poundText}> lbs </Text>
+                        <Text style = {[styles.mediumText, styles.inputLabel]}> lbs </Text>
                     </View>
+                    <View style={[styles.inputWrap, {flex: 1/2}]}>
+                        <TouchableHighlight
+                            style = {setInfo.difficulty !== "NA"? styles.doneItButton : styles.didItButton}
+                            onPress={() => this.finishedSet(setInfo)}
+                            underlayColor='#dddddd'
+                        >
+                            <Text style = {styles.didItText}> {setInfo.didIt? '✓': 'done'} </Text>
 
-                    <TouchableHighlight
-                        style = {setInfo.difficulty !== "NA"? styles.doneItButton : styles.didItButton}
-                        onPress={() => this.finishedSet(setInfo)}
-                        underlayColor='#dddddd'
-                    >
-                        <Text style = {styles.didItText}> {setInfo.didIt? '✓': 'done'} </Text>
-
-                    </TouchableHighlight>
+                        </TouchableHighlight>
+                    </View>
                 </View>
-                <View style={styles.separator}/>
+                <View style={mainStyles.separator}/>
             </View>
         );
     }
-
-    newLiftName(newLiftName){
-        // console.log("changed the lift name to ", text)
-        let newliftInfo = this.state.liftInfo;
-        newliftInfo.forEach(set => set.lift = newLiftName)
-        console.log("set info for lift ", newliftInfo)
-        this.setState({
-            liftName: newLiftName,
-            liftInfo: newliftInfo
-        })
-    }
-
     render(){
         return(
-            <View style = {styles.pageContainer}>
+            <View style = {mainStyles.container}>
                 <View style={styles.header}>
                     <TextInput
-                        style={styles.title}
+                        style={[mainStyles.boldTitle, {flex: 3, color: colors.textBlue, fontSize: 22}]}
                         keyboardType = 'default'
                         multiline = {true}
                         placeholder = {`${this.state.name}`}
-                        placeholderTextColor = {textBlue}
+                        placeholderTextColor = {colors.textBlue}
                         onChangeText = { text => this.newLiftName(text)}
                     />
-                    <View style={styles.liftWeight}>
+                    <View style={[styles.inputWrap, {flex: 2}]}>
                         <TextInput
-                            style={styles.weightInputHeader}
+                            style={[styles.input,{flex: 2} ]}
                             keyboardType = 'numeric'
                             placeholder= {this.state.setWeight}
                             onChangeText = {(text) => this.updateLiftWeight(text)}
                         />
-                        <Text style = {styles.poundTextHeader}> lbs </Text>
+                        <Text style = {[styles.inputLabel,{flex: 1}]}> lbs </Text>
                     </View>
                 </View>
                 <ListView
                     dataSource   = {this.state.dataSource}
                     renderRow    = {this.renderSet.bind(this)}
                     renderHeader = {this.warmupSets.bind(this)}
-                    renderFooter = {this.setFooter.bind(this)}
                 />
             </View>
         );
@@ -340,22 +294,54 @@ class SetView extends Component{
 }
 
 var styles = StyleSheet.create({
-    title:{
-        fontSize: 22,
-        fontFamily: "Optima-Bold",
-        color: textBlue,
-        flex:3,
+    header:{
+        flexDirection: 'row',
+        padding:5,
     },
-    warmupSets: {
-        fontSize: 15,
+    repsInfo: {
+        flex:2,
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+    },
+    inputWrap:{
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    input:{
+        textAlign: "right",
+        fontSize: 18,
+        color: textGrey,
+        flex: 1,
+    },
+    inputLabel: {
+        textAlign: "left",
+        flex: 3,
+        fontSize: 18,
         color: textGrey,
     },
+
+    weightInfo: {
+        flex:2,
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        backgroundColor: "rgb(72, 235, 181)"
+    },
+
     liftWeight: {
         flex:3,
         flexDirection: 'row',
         justifyContent: 'flex-end',
         alignItems: 'center',
     },
+
+    warmupSets: {
+        fontSize: 15,
+        color: textGrey,
+    },
+
     liftWeightInput:{
         textAlign: "right",
         fontSize: 18,
@@ -367,10 +353,6 @@ var styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         paddingVertical: 6
-    },
-    header:{
-        flexDirection: 'row',
-        padding:5,
     },
     footer:{
         flexDirection: 'row',
@@ -402,18 +384,7 @@ var styles = StyleSheet.create({
         fontSize: 15,
         color: 'white',
     },
-    repsInfo: {
-        flex:2,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    weightInfo: {
-        flex:2,
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-    },
+
     weightInput:{
         textAlign: "right",
         fontSize: 18,
@@ -421,19 +392,8 @@ var styles = StyleSheet.create({
         fontSize: 18,
         flex:2,
     },
-    poundText: {
-        textAlign: "left",
-        fontSize: 17,
-        color: textGrey,
-        flex: 3,
-    },
-    weightInputHeader:{
-        textAlign: "right",
-        fontSize: 18,
-        color: textGrey,
-        fontSize: 18,
-        flex:4,
-    },
+
+
     poundTextHeader: {
         textAlign: "left",
         fontSize: 17,
@@ -465,25 +425,12 @@ var styles = StyleSheet.create({
         justifyContent: 'center',
         padding: 5
     },
-    repInput:{
-        textAlign: "right",
-        fontSize: 18,
-        color: textGrey,
-        fontSize: 18,
-        flex:1,
-    },
+
     repsText: {
         textAlign: "left",
         fontSize: 17,
         color: textGrey,
         flex: 2,
-    },
-    pageContainer:{
-        flex: 1
-    },
-    separator: {
-        height: 1,
-        backgroundColor: '#dddddd'
     },
     infoText:{
         fontSize: 20,

@@ -1,7 +1,7 @@
 'use strict';
-
 // View a single day of a routine.
 // Lists lifts in order with an indented list of the individual sets below them
+
 import {buttonMain, buttonMainOutline, buttonDone, buttonDoneOutline, textGrey, textBlue} from './appColors';
 import React, { Component } from 'react'
 import {
@@ -12,12 +12,13 @@ import {
     ActivityIndicator,
     ListView,
 } from 'react-native';
+import _ from "lodash";
+// import {colors, mainStyles}  from './appStyles.js'
+
 import SetView from './SetView';
 import sendHistoryToDropbox from './dropboxHelpers/sendHistoryToDropbox';
-import checkForFile from './checkForFile';
 import downloadFile from './fsHelpers/downloadFile';
 import getDateTime from './getDateTime';
-import roundToFive from './roundToFive';
 import updateHistory from './updateHistory';
 import saveFile from './fsHelpers/saveFile';
 
@@ -25,22 +26,57 @@ class DayView extends Component{
     constructor(props){
         super(props);
 
+        //info for the list of lifts.
         var dataSource = new ListView.DataSource(
             {rowHasChanged: (r1,r2) => (r1.name !== r2.name)}
         );
-
-        const {date} = getDateTime();
 
         this.state = {
             ds: dataSource,
             dataSource: dataSource.cloneWithRows(this.props.lifts),
             lifts: this.props.lifts,
-            history: null,
-            date: date,
-            selected: true,
             dayID: this.props.id,
+            loading: true
         }
+
+        //go into history and grab all our info for this routine.
         this.grabHistory();
+    }
+
+    async grabHistory(){
+        try {
+            const {routine, id: day, lifts: defaultLifts} = this.props
+            const {date} = getDateTime();
+            const history = JSON.parse(await downloadFile(`liftHistory.csv`))
+
+            //gather each lifts last lifted weight and assign as setweight
+            const lastLiftWeights = _(history)
+                .chain()
+                .filter(set => set.routine === routine)
+                .groupBy("lift")
+                .map((records, lift) => {
+                    return {name: lift, weight: _.findLast(records).weight}
+                })
+                .value()
+
+            //fill in weights for sets based upon last lifts.
+            lastLiftWeights.forEach( lift => {
+                //find lift in routine that applies to this lift
+                defaultLifts.forEach(l => l.weight = l.name === lift.name? lift.weight: "0")
+            })
+
+            const doneToday = history.filter(set => set.routine === routine && set.date === date)
+
+            this.setState({
+                dataSource: this.state.ds.cloneWithRows(defaultLifts),
+                lifts: defaultLifts,
+                loading: false
+            })
+        } catch(error){
+            // console.log("seems we don't have a lift history file, let's make one")
+            // await saveFile(`liftHistory.csv`, "[]")
+            // this.setState({history: []})
+        }
     }
 
     async addNewRecord(newData){
@@ -57,29 +93,15 @@ class DayView extends Component{
         this.setState({history: newHistory})
     }
 
-    async grabHistory(){
-        try {
-            const rawHistory = await downloadFile(`liftHistory.csv`)
-            this.setState({history: JSON.parse(rawHistory)})
-        } catch(error){
-            console.log("seems we don't have a lift history file, let's make one")
-            await saveFile(`liftHistory.csv`, "[]")
-            this.setState({history: []})
-        }
-    }
+
 
     renderLift(liftData) {
-
-        let liftHistory = this.state.history
-            .filter(s => s.lift === liftData.name)
-
         return (
             <View>
                 <View style={styles.liftSets}>
                     <SetView
-                        data    = {liftData}
-                        routine = {this.props.routine}
-                        liftHistory = {liftHistory}
+                        data        = {liftData}
+                        routine     = {this.props.routine}
                         onSavedData = { newData => this.addNewRecord(newData) }
                     />
                 </View>
@@ -98,7 +120,6 @@ class DayView extends Component{
     }
 
     addLift(){
-
         let lifts = this.state.lifts;
         lifts.push({
             name: "My New Lift",
@@ -143,7 +164,7 @@ class DayView extends Component{
     }
 
     render(){
-        let loadingHistory = this.state.history == null?
+        let loadingHistory = this.state.loading?
             (<ActivityIndicator size='large'/>):
             (
                 <ListView
