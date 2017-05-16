@@ -63,6 +63,11 @@ const mainStyles = StyleSheet.create({
         height: 1,
         backgroundColor: '#dddddd'
     },
+    inputWrap:{
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
 });
 
 module.exports = {

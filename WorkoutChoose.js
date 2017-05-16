@@ -96,6 +96,8 @@ class WorkoutChoose extends Component {
             header_text: `Searching Dropbox`
         })
 
+        await this.deleteLocalRoutines()
+        
         //Find all routines in our dropbox...
         const cloudResults = await listAvailableRoutines(this.props.token);
 

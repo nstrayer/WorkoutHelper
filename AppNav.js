@@ -9,7 +9,8 @@ import {
     ActivityIndicator,
     Image,
     AsyncStorage,
-    Linking
+    Linking,
+    ScrollView
 } from 'react-native';
 
 // import WarmupSets from './WarmupSets';
@@ -33,8 +34,14 @@ class AppNav extends Component{
 
     componentDidMount() {
         this.checkForToken()
-        //uncomment this to simulate a new user.
-        // deleteToken()
+    }
+
+    async logOut(){
+        deleteToken()
+        this.setState({
+            token: null,
+            loggedIn: false
+        });
     }
 
     async checkForToken(){
@@ -85,22 +92,41 @@ class AppNav extends Component{
                 underlayColor='orangered'
                 onPress={() => this.grabDropboxToken(ApiKey.ApiKey)} >
                 <Text style = {mainStyles.buttonText}>
-                    {!this.state.loggedIn? "Log In" : "Logged In"}
+                    {!this.state.loggedIn? "Log In" : "Log Out"}
                 </Text>
             </TouchableHighlight>
         )
 
         return(
-            <View style = {mainStyles.container}>
+            <View style = {[mainStyles.container, {flexDirection:"column"}]}>
                 <View style = {styles.greetWrap}>
-                    <Text style = {mainStyles.largeText}>It is a good day to Workout</Text>
-                    <Text style = {styles.smallerText}>
-                        {this.state.loggedIn? "All logged in, let's go":"Log in so your workouts can be saved." }
-                    </Text>
+                    <Text style = {styles.title}>{`It's a good day to lift`}</Text>
                 </View>
-                <View style = {styles.spacer}/>
-                <View style = {styles.buttonWrap}>
-                    {greetingView}
+                <ScrollView>
+                    <View style = {styles.buttonWrap}>
+                        <TouchableHighlight style = {mainStyles.button}
+                            underlayColor='orangered'
+                            onPress={this.goToWorkout.bind(this)} >
+                            <Text style = {mainStyles.buttonText}>
+                                {this.state.loggedIn? "New Workout":"Log in to continue." }
+                            </Text>
+                        </TouchableHighlight>
+                    </View>
+                </ScrollView>
+
+                <View style = {styles.bottom}>
+                    <TouchableHighlight style = {mainStyles.button}
+                        underlayColor='orangered'
+                        onPress={() => {
+                            if(this.state.loggedIn){
+                                this.logOut()
+                            } else {
+                                this.checkForToken()
+                            }}} >
+                        <Text style = {mainStyles.buttonText}>
+                            {!this.state.loggedIn? "Log In" : "Log Out"}
+                        </Text>
+                    </TouchableHighlight>
                 </View>
             </View>
         )
@@ -109,7 +135,8 @@ class AppNav extends Component{
 
 const styles = StyleSheet.create({
     greetWrap: {
-        flex: 2,
+        // flex: 1,
+        paddingTop: 15,
         justifyContent: 'space-around',
         alignItems: 'center',
     },
@@ -126,6 +153,18 @@ const styles = StyleSheet.create({
     smallerText: {
         fontSize: 18,
         color: colors.textGrey,
+    },
+    title:{
+        fontSize: 30,
+        color: colors.textBlue,
+        fontWeight: "bold",
+    },
+    bottom:{
+        padding: 15,
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0
     },
 });
 

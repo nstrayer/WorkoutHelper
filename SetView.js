@@ -2,16 +2,6 @@
 // View a single day of a routine.
 // Lists lifts in order with an indented list of the individual sets below them
 
-import {
-    buttonMain,
-    buttonMainOutline,
-    buttonDone,
-    buttonDoneOutline,
-    textGrey,
-    textBlue,
-    buttonDisabled,
-    buttonDisabledOutline
-} from './appColors';
 import React, { Component } from 'react'
 import {
     StyleSheet,
@@ -24,7 +14,6 @@ import {
     Image
 } from 'react-native';
 import {colors, mainStyles}  from './appStyles.js'
-import saveSetInfo from './saveSetInfo';
 import roundToFive from './roundToFive';
 import getDateTime from './getDateTime'
 
@@ -103,12 +92,6 @@ class SetView extends Component{
         this.updateliftInfo(sets)
     }
 
-    // componentDidMount(){
-    //     //fill in the set weight with the last value the user lifted for this lift and routine.
-    //     this.getLastSetWeight()
-    // }
-
-
     finishedSet(setInfo, setDifficulty = "done"){
         let {name, sets} = this.state;
         //if they've done this set before then undo their effort.
@@ -174,7 +157,7 @@ class SetView extends Component{
 
     setFooter(){
         return(
-            <View style={styles.inputWrap}>
+            <View style={mainStyles.inputWrap}>
                 <View style = {styles.addRemoveButtons}>
                     <TouchableHighlight
                         style = {mainStyles.button}
@@ -186,7 +169,7 @@ class SetView extends Component{
                 </View>
                 <View style = {styles.addRemoveButtons}>
                     <TouchableHighlight
-                        style = {this.state.oneLiftLeft? [mainStyles.button, {backgroundColor: colors.textGrey}]: mainStyles.button}
+                        style = {this.state.sets.length === 1? [mainStyles.button, {backgroundColor: colors.textGrey}]: mainStyles.button}
                         onPress={() => this.removeSet()}
                         underlayColor='#dddddd'
                     >
@@ -225,27 +208,27 @@ class SetView extends Component{
         return (
             <View>
                 <View style={styles.setRow}>
-                    <View style={styles.inputWrap}>
+                    <View style={mainStyles.inputWrap}>
                         <TextInput
                             style={styles.input}
                             keyboardType = 'numeric'
                             placeholder= {`${reps}`}
-                            placeholderTextColor = {textGrey}
+                            placeholderTextColor = {colors.textGrey}
                             onChangeText = {(text)=> this.newRepNum(text, setNum)}
                         />
                         <Text style = {[styles.mediumText, styles.inputLabel]}> reps </Text>
                     </View>
-                    <View style={[styles.inputWrap, {flex: 1.4}]}>
+                    <View style={[mainStyles.inputWrap, {flex: 1.4}]}>
                         <TextInput
                             style={styles.input}
                             keyboardType = 'numeric'
                             placeholder = {`${weight}`}
-                            placeholderTextColor = {textGrey}
+                            placeholderTextColor = {colors.textGrey}
                             onChangeText = {(text)=> this.newSetWeight(text, setNum)}
                         />
                         <Text style = {[styles.mediumText, styles.inputLabel]}> lbs </Text>
                     </View>
-                    <View style={[styles.inputWrap, {flex: 2/3}]}>
+                    <View style={[mainStyles.inputWrap, {flex: 2/3}]}>
                         <TouchableHighlight
                             style = {("difficulty" in setInfo) && setInfo.difficulty !== "NA"?
                                 [mainStyles.button, {backgroundColor: colors.buttonDone}] : mainStyles.button
@@ -274,7 +257,7 @@ class SetView extends Component{
                         placeholderTextColor = {colors.textBlue}
                         onChangeText = { text => this.newLiftName(text)}
                     />
-                    <View style={[styles.inputWrap, {flex: 2}]}>
+                    <View style={[mainStyles.inputWrap, {flex: 2}]}>
                         <TextInput
                             style={[styles.input,{flex: 2} ]}
                             keyboardType = 'numeric'
@@ -319,22 +302,17 @@ var styles = StyleSheet.create({
         justifyContent: 'flex-end',
         alignItems: 'center',
     },
-    inputWrap:{
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
-    },
     input:{
         textAlign: "right",
         fontSize: 18,
-        color: textGrey,
+        color: colors.textGrey,
         flex: 1,
     },
     inputLabel: {
         textAlign: "left",
         flex: 3,
         fontSize: 18,
-        color: textGrey,
+        color: colors.textGrey,
     },
 });
 

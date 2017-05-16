@@ -3,9 +3,9 @@
 // Updates the lift history records with newly provided history
 
 import RNFS from 'react-native-fs';
-import downloadFile from './fsHelpers/downloadFile';
-import deleteFile from './fsHelpers/deleteFile';
-import saveFile from './fsHelpers/saveFile';
+import downloadFile from './downloadFile';
+import deleteFile from './deleteFile';
+import saveFile from './saveFile';
 
 async function updateHistory(newRecords){
     let results = JSON.parse(await downloadFile(`liftHistory.csv`))

@@ -2,7 +2,6 @@
 // View a single day of a routine.
 // Lists lifts in order with an indented list of the individual sets below them
 
-import {buttonMain, buttonMainOutline, buttonDone, buttonDoneOutline, textGrey, textBlue} from './appColors';
 import React, { Component } from 'react'
 import {
     StyleSheet,
@@ -13,13 +12,13 @@ import {
     ListView,
 } from 'react-native';
 import _ from "lodash";
-// import {colors, mainStyles}  from './appStyles.js'
 
+import {colors, mainStyles}  from './appStyles.js'
 import SetView from './SetView';
 import sendHistoryToDropbox from './dropboxHelpers/sendHistoryToDropbox';
 import downloadFile from './fsHelpers/downloadFile';
+import updateHistory from './fsHelpers/updateHistory';
 import getDateTime from './getDateTime';
-import updateHistory from './updateHistory';
 import saveFile from './fsHelpers/saveFile';
 
 
@@ -106,21 +105,6 @@ class DayView extends Component{
     }
 
 
-    renderLift(liftData) {
-        return (
-            <View>
-                <View style={styles.liftSets}>
-                    <SetView
-                        data          = {liftData}
-                        routine       = {this.props.routine}
-                        onSavedData   = { newData => this.addNewRecord(newData) }
-                        deleteLastSet = { liftName => this.deleteLift(liftName)}
-                    />
-                </View>
-            </View>
-        );
-    }
-
     async finishWorkout(){
         try{
             await sendHistoryToDropbox()
@@ -162,27 +146,41 @@ class DayView extends Component{
     footer(){
         return (
             <View>
-                <View style = {styles.buttonContainer}>
+                <View style = {mainStyles.inputWrap}>
                     <TouchableHighlight
-                        style = {styles.doneButton}
+                        style = {[mainStyles.button, {backgroundColor: colors.buttonDone}]}
                         onPress={() => this.addLift()}
                         underlayColor='#dddddd'
                     >
-                        <Text style = {styles.buttonText}> {`Add Lift`} </Text>
+                        <Text style = {mainStyles.buttonText}> {`Add Lift`} </Text>
                     </TouchableHighlight>
                 </View>
 
-                <View style = {styles.buttonContainer}>
+                <View style = {mainStyles.inputWrap}>
                     <TouchableHighlight
-                        style = {styles.doneButton}
+                        style = {[mainStyles.button, {backgroundColor: colors.buttonDone}]}
                         onPress={() => this.finishWorkout()}
                         underlayColor='#dddddd'
                     >
-                        <Text style = {styles.buttonText}> {`Done with workout`} </Text>
+                        <Text style = {mainStyles.buttonText}> {`Done with workout`} </Text>
                     </TouchableHighlight>
                 </View>
             </View>
         )
+    }
+
+
+    renderLift(liftData) {
+        return (
+            <View style={[mainStyles.container,{marginTop: 0, paddingBottom: 10}]}>
+                <SetView
+                    data          = {liftData}
+                    routine       = {this.props.routine}
+                    onSavedData   = { newData => this.addNewRecord(newData) }
+                    deleteLastSet = { liftName => this.deleteLift(liftName)}
+                />
+            </View>
+        );
     }
 
     render(){
@@ -196,64 +194,11 @@ class DayView extends Component{
                 />
             );
         return (
-            <View style = {styles.pageContainer}>
+            <View style = {[mainStyles.container, {padding: 15}]}>
                 {loadingHistory}
             </View>
         )
     }
 }
-
-var styles = StyleSheet.create({
-    buttonContainer:{
-        flex: 1,
-        paddingHorizontal: 15,
-    },
-    doneButton: {
-        height: 50,
-        flexDirection: 'row',
-        backgroundColor: buttonMain,
-        borderColor: buttonMainOutline,
-        borderWidth: 1,
-        borderRadius: 8,
-        alignSelf: 'stretch',
-        justifyContent: 'center',
-    },
-    buttonText: {
-        fontSize: 18,
-        color: 'white',
-        alignSelf: 'center'
-    },
-    pageContainer:{
-        flex: 1,
-        paddingTop: 65,
-    },
-    resultsList: {
-        marginBottom: 20,
-        fontSize: 18,
-        textAlign: 'center',
-        color: '#3182bd'
-    },
-    rowContainer: {
-        flexDirection: 'column',
-    },
-    separator: {
-        height: 1,
-        backgroundColor: '#dddddd'
-    },
-    liftName:{
-        flex: 1,
-        // backgroundColor: '#ccebc5',
-        padding:10,
-    },
-    liftSets:{
-        flex:1,
-        padding:10,
-        // backgroundColor: '#b3cde3',
-    },
-    title:{
-        fontSize: 30,
-        color: '#656565'
-    }
-});
 
 module.exports = DayView;

@@ -8,20 +8,18 @@ import Dropbox from 'dropbox';
 const sendHistoryToDropbox = async () => {
     // First we turn the history json into a csv using a map function
 
-    const localHistory = await downloadFile(`liftHistory.csv`);
-
-    let parsedHistory = JSON.parse(localHistory);
-
+    let history = JSON.parse(await downloadFile(`liftHistory.csv`));
 
     //add a header row and merge into a single string and put in initialized historyCSV variable.
-    const historyCSV = [`lift, weight, reps, setNumber, date, time, notes, routine`]
+    const historyCSV = [`lift, weight, reps, difficulty, setNumber, date, time, notes, routine`]
         .concat(
-            parsedHistory
-                .map(s => `${s.lift}, ${s.weight}, ${s.reps}, ${s.setNum}, ${s.date}, ${s.time}, ${"nothing yet"}, ${s.routine}`)
+            history
+                .map(s => `${s.lift}, ${s.weight}, ${s.reps}, ${s.difficulty}, ${s.setNum}, ${s.date}, ${s.time}, ${"nothing yet"}, ${s.routine}`)
         )
         .join("\n");
 
-    // console.log(historyCSV);
+    console.log(historyCSV);
+
     //grab user's dropbox token
     const dbToken = await downloadFile("token");
 
@@ -29,7 +27,7 @@ const sendHistoryToDropbox = async () => {
     var dbx = new Dropbox({ accessToken: dbToken });
 
     //send the new lift data up to dropbox.
-    await dbx.filesUpload({
+    dbx.filesUpload({
                 contents: historyCSV,
                 path: '/liftHistory.csv',
                 mode: 'overwrite',
