@@ -12,7 +12,7 @@ import {
     Linking
 } from 'react-native';
 
-import WarmupSets from './WarmupSets';
+// import WarmupSets from './WarmupSets';
 import WorkoutChoose from './WorkoutChoose';
 import {
     findToken,
@@ -21,6 +21,7 @@ import {
     grabDropboxToken,
 } from './tokenTasks';
 import {colors, mainStyles} from './appStyles.js'
+
 class AppNav extends Component{
     constructor(props){
         super(props);
@@ -31,8 +32,8 @@ class AppNav extends Component{
     }
 
     componentDidMount() {
-        //uncomment this to simulate a new user.
         this.checkForToken()
+        //uncomment this to simulate a new user.
         // deleteToken()
     }
 
@@ -56,13 +57,6 @@ class AppNav extends Component{
             //same the token also.
             await saveToken(userToken)
         }
-    }
-
-    goToWarmups(event){
-        this.props.navigator.push({
-            title: "Warmup Sets",
-            component: WarmupSets,
-        });
     }
 
     goToWorkout(event){

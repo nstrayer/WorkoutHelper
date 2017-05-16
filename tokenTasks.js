@@ -2,9 +2,9 @@
 import {Linking} from 'react-native';
 import {ApiKey} from './Config';
 import RNFS from 'react-native-fs';
-import downloadFile from './downloadFile';
-import saveFile from './saveFile';
-import deleteFile from './deleteFile';
+import downloadFile from './fsHelpers/downloadFile';
+import saveFile from './fsHelpers/saveFile';
+import deleteFile from './fsHelpers/deleteFile';
 
 // anything one could desire to do with a dropbox token, right here.
 

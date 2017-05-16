@@ -1,6 +1,6 @@
 'use strict';
 import RNFS from 'react-native-fs';
-import downloadFile from './downloadFile';
+import downloadFile from './fsHelpers/downloadFile';
 
 // Takes a list of local workouts in json
 // then parses them to an array of objects

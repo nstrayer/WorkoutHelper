@@ -1,12 +1,11 @@
 'use strict'
-
 // Takes an setInfo object and a routine name and appends the object to
 // the given routine's results file.
 
 import RNFS from 'react-native-fs';
-import downloadFile from './downloadFile';
-import deleteFile from './deleteFile';
-import saveFile from './saveFile';
+import downloadFile from './fsHelpers/downloadFile';
+import deleteFile from './fsHelpers/deleteFile';
+import saveFile from './fsHelpers/saveFile';
 import getDateTime from './getDateTime';
 
 const saveSetInfo = async (setInfo, liftName, routineName) => {

@@ -15,11 +15,11 @@ import {
 import SetView from './SetView';
 import sendHistoryToDropbox from './dropboxHelpers/sendHistoryToDropbox';
 import checkForFile from './checkForFile';
-import downloadFile from './downloadFile';
+import downloadFile from './fsHelpers/downloadFile';
 import getDateTime from './getDateTime';
 import roundToFive from './roundToFive';
 import updateHistory from './updateHistory';
-import saveFile from './saveFile';
+import saveFile from './fsHelpers/saveFile';
 
 class DayView extends Component{
     constructor(props){

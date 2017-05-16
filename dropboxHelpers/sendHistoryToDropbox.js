@@ -1,7 +1,7 @@
 'use strict';
 
 // Takes a local results file and uploads it to dropbox
-import downloadFile from '../downloadFile';
+import downloadFile from '../fsHelpers/downloadFile';
 import Dropbox from 'dropbox';
 
 

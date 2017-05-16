@@ -1,8 +1,6 @@
 'use strict';
 import React, { Component } from 'react'
-import {
-    Linking
-} from 'react-native';
+import { Linking } from 'react-native';
 // A helpful function for grabbing authentication details from dropbox and returning
 // the token as a string
 
@@ -24,7 +22,7 @@ const DropboxLogin = (ApiKey) => {
             const theToken = event.url
                 .toString()
                 .match(/access_token=(.*)&token_type/)[1];
-                
+
             console.log(theToken)
         }
     } );

@@ -1,6 +1,6 @@
 'use strict';
-
 //Takes a json object defining a routine and displays a list of the days for given routine
+
 import {buttonMain, buttonMainOutline, buttonDone, buttonDoneOutline, textGrey, textBlue} from './appColors';
 import React, { Component } from 'react'
 import {
@@ -14,9 +14,9 @@ import {
     Image
 } from 'react-native';
 import DayView from './DayView';
-import saveFile from './saveFile';
+import saveFile from './fsHelpers/saveFile';
 import checkForFile from './checkForFile';
-import downloadFile from './downloadFile';
+import downloadFile from './fsHelpers/downloadFile';
 
 class RoutineView extends Component{
     constructor(props){

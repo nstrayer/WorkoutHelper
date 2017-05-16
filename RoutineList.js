@@ -1,5 +1,4 @@
 'use strict';
-
 // list of currently loaded workout templates in the dropbox folder.
 
 import {buttonMain, buttonMainOutline, buttonDone, buttonDoneOutline, textGrey, textBlue} from './appColors';

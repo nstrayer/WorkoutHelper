@@ -16,14 +16,12 @@ import {
     Image
 } from 'react-native';
 
-import RoutineList from './RoutineList';
-import findFiles from './findFiles';
-import downloadFile from './downloadFile';
-import saveFile from './saveFile';
-import checkForFile from './checkForFile';
-import deleteFile from './deleteFile';
+import availableFiles        from './fsHelpers/availableFiles';
+import multiDownload         from './fsHelpers/multiDownload';
+import deleteFile            from './fsHelpers/deleteFile';
+import downloadRoutine       from './dropboxHelpers/downloadRoutine';
 import listAvailableRoutines from './dropboxHelpers/listAvailableRoutines';
-import downloadRoutine from './dropboxHelpers/downloadRoutine';
+import RoutineList           from './RoutineList';
 
 
 class WorkoutChoose extends Component {
@@ -38,11 +36,13 @@ class WorkoutChoose extends Component {
     }
 
     componentDidMount() {
+        // this.deleteLocalRoutines()
         this.loadData();
     }
 
     async loadData(){
-        const routines = await this.checkForWorkouts();
+
+        const routines = await this.getWorkouts();
 
         //now we have all the data's set our state.
         this.setState({
@@ -52,15 +52,17 @@ class WorkoutChoose extends Component {
         })
     }
 
-    async checkForWorkouts(){
-        let rawRoutines;
-        let localRoutinePaths = await findFiles(".json");
+    async getWorkouts(){
+
+        let localRoutinePaths = await availableFiles(".json");
+        let rawRoutineData;
 
         if(localRoutinePaths.length > 0){
-            rawRoutines = await this.loadLocalRoutines(localRoutinePaths);
+            rawRoutineData = await multiDownload(localRoutinePaths)
         } else {
             //if we didn't find any local routines, let the user know and search for some on dropbox.
             this.setState({header_text: "Checking Dropbox for routines."});
+
             //Download routines from dropbox to local memory
             const cloudResults = await listAvailableRoutines(this.props.token);
 
@@ -69,13 +71,22 @@ class WorkoutChoose extends Component {
             }
 
             //Now that we have local files, try grabbing their paths again
-            localRoutinePaths = await findFiles(".json");
+            localRoutinePaths = await availableFiles(".json");
 
-            if(localRoutinePaths.length < 1) this.setState({header_text: "Somethings gone horribly wrong. Try restarting app."})
-
-            rawRoutines = await this.loadLocalRoutines(localRoutinePaths);
+            //and downloading them.
+            rawRoutineData = await multiDownload(localRoutinePaths)
         }
-        return this.parseRoutines(rawRoutines)
+
+        let routineData = []
+        for(let data of rawRoutineData){
+            try{
+                routineData.push(JSON.parse(data))
+            } catch(error){
+                console.log("this file was messed up", data)
+            }
+        }
+
+        return routineData;
     }
 
     async getFromDropbox(){
@@ -84,36 +95,34 @@ class WorkoutChoose extends Component {
             downloading: true
         })
 
-        //kill all the local workouts. This will need to change once we allow creation of workouts.
-        await this.deleteLocalRoutines();
+        //Find all routines in our dropbox...
+        const cloudResults = await listAvailableRoutines(this.props.token);
 
-        //now rerun the check for workouts function which will default to syncing with dropbox because we have no local routines anymore.
-        await this.checkForWorkouts();
+        const dropboxFiles = cloudResults.entries.map(file => {
+            return {name: file.name, path: file.path_display}
+        })
+
+        //we want to download all the routines that are on dropbox and local
+        //and also the ones not on local but on dropbox. We won't replace the files
+        //that we have on local but not dropbox because we may have created them.
+        for (let file of dropboxFiles){
+            console.log(`downloading ${file.name}`)
+            await downloadRoutine(file.path, file.name)
+        }
+
+        //now rerun the get workouts function to load these routines into memory.
+        await this.loadData();
     }
 
     async deleteLocalRoutines(){
-        const localRoutinePaths = await findFiles(".json");
+        const localRoutinePaths = await availableFiles(".json");
 
         await localRoutinePaths.map(r => deleteFile(r))
         console.log("deleted the following routines from your local storage", localRoutinePaths)
     }
 
-    async loadLocalRoutines(paths){
-        this.setState({header_text: "Loading routines."})
-        let rawRoutines = [];
-        for (let localRoutinePath of paths){
-            let rawRoutine = await downloadFile(localRoutinePath);
-            rawRoutines.push(rawRoutine)
-        }
-        return(rawRoutines)
-    }
-
-    parseRoutines(stringData){
-        return stringData.map(workout => JSON.parse(workout));
-    };
 
     render() {
-
         const theList = this.state.downloading?
             (<ActivityIndicator size='large'/>):
             (

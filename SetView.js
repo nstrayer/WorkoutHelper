@@ -1,7 +1,7 @@
 'use strict';
-
 // View a single day of a routine.
 // Lists lifts in order with an indented list of the individual sets below them
+
 import {
     buttonMain,
     buttonMainOutline,
@@ -26,6 +26,7 @@ import {
 import saveSetInfo from './saveSetInfo';
 import roundToFive from './roundToFive';
 import getDateTime from './getDateTime'
+
 class SetView extends Component{
     constructor(props){
         super(props);
