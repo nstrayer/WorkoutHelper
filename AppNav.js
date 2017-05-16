@@ -1,5 +1,4 @@
 'use strict';
-import {buttonMain, buttonMainOutline, buttonDone, buttonDoneOutline, textGrey, textBlue} from './appColors';
 import React, { Component } from 'react'
 import {
     StyleSheet,
@@ -13,14 +12,15 @@ import {
     Linking
 } from 'react-native';
 
-import WarmupSets from './WarmupSets'
-import WorkoutChoose from './WorkoutChoose'
-import ApiKey from './Config';
-import RNFS from 'react-native-fs';
-import downloadFile from './downloadFile';
-import saveFile from './saveFile';
-import deleteFile from './deleteFile';
-
+import WarmupSets from './WarmupSets';
+import WorkoutChoose from './WorkoutChoose';
+import {
+    findToken,
+    saveToken,
+    deleteToken,
+    grabDropboxToken,
+} from './tokenTasks';
+import {colors, mainStyles} from './appStyles.js'
 class AppNav extends Component{
     constructor(props){
         super(props);
@@ -32,70 +32,30 @@ class AppNav extends Component{
 
     componentDidMount() {
         //uncomment this to simulate a new user.
-        // this.removeToken();
         this.checkForToken()
+        // deleteToken()
     }
 
-    checkForToken(){
-        downloadFile("token")
-            .then( token => {
-                console.log("User is logged in")
-                this.setState({
-                    token: token,
-                    loggedIn: true
-                });
-            })
-            .catch( err => {
-                console.log(err.message, err.code);
+    async checkForToken(){
+        try{
+            const userToken = await findToken()
+
+            this.setState({
+                token: userToken,
+                loggedIn: true
             });
-    }
+        } catch(error){
+            console.log("no token found, moving to plan b")
+            const userToken = await grabDropboxToken()
 
-    saveToken(token){
-        saveFile("token", token)
-            .then( success => {
-                console.log('token sent!');
-            })
-            .catch( err => {
-                console.log(err.message);
+            this.setState({
+                token: userToken,
+                loggedIn: true
             });
-    }
 
-    removeToken(){
-        deleteFile("token")
-            .then( success => {
-                console.log('token deleted!');
-            })
-            .catch( err => {
-                console.log(err.message);
-            });
-    }
-
-    grabDropboxToken(ApiKey){
-        return new Promise( ( resolve, reject ) => {
-            Linking.openURL([
-                'https://www.dropbox.com/1/oauth2/authorize',
-                '?response_type=token',
-                '&client_id=' +  ApiKey ,
-                '&redirect_uri=WorkoutLog://foo'
-            ].join(''));
-
-            Linking.addEventListener( 'url', handleUrl.bind(this) );
-
-            function handleUrl( event ) {
-                const error = event.url.toString().match( /error=([^&]+)/ );
-                const code = event.url.toString().match( /code=([^&]+)/ );
-
-                const theToken = event.url
-                    .toString()
-                    .match(/access_token=(.*)&token_type/)[1];
-
-                this.setState({
-                    token: theToken,
-                    loggedIn: true
-                });
-                this.saveToken(theToken);
-            }
-        } );
+            //same the token also.
+            await saveToken(userToken)
+        }
     }
 
     goToWarmups(event){
@@ -118,28 +78,28 @@ class AppNav extends Component{
     render(){
         let greetingView = this.state.loggedIn ?
         (
-            <TouchableHighlight style = {styles.navButton}
+            <TouchableHighlight style = {mainStyles.button}
                 underlayColor='orangered'
                 onPress={this.goToWorkout.bind(this)} >
-                <Text style = {styles.buttonText}>
+                <Text style = {mainStyles.buttonText}>
                     New Workout
                 </Text>
             </TouchableHighlight>
         ) :
         (
-            <TouchableHighlight style = {styles.navButton}
+            <TouchableHighlight style = {mainStyles.button}
                 underlayColor='orangered'
                 onPress={() => this.grabDropboxToken(ApiKey.ApiKey)} >
-                <Text style = {styles.buttonText}>
+                <Text style = {mainStyles.buttonText}>
                     {!this.state.loggedIn? "Log In" : "Logged In"}
                 </Text>
             </TouchableHighlight>
         )
 
         return(
-            <View style = {styles.container}>
+            <View style = {mainStyles.container}>
                 <View style = {styles.greetWrap}>
-                    <Text style = {styles.greetingText}>It is a good day to Workout</Text>
+                    <Text style = {mainStyles.largeText}>It is a good day to Workout</Text>
                     <Text style = {styles.smallerText}>
                         {this.state.loggedIn? "All logged in, let's go":"Log in so your workouts can be saved." }
                     </Text>
@@ -154,11 +114,6 @@ class AppNav extends Component{
 }
 
 const styles = StyleSheet.create({
-    container:{
-        marginTop: 65,
-        flex:1,
-        flexDirection: 'column',
-    },
     greetWrap: {
         flex: 2,
         justifyContent: 'space-around',
@@ -174,29 +129,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flexDirection: 'row'
     },
-    navButton: {
-        height: 36,
-        flex: 1,
-        alignSelf: 'stretch',
-        backgroundColor: buttonMain,
-        borderColor: buttonMainOutline,
-        borderWidth: 1,
-        borderRadius: 8,
-        marginBottom: 10,
-        justifyContent: 'center'
-    },
-    greetingText: {
-        fontSize: 24,
-        color: textGrey,
-    },
     smallerText: {
         fontSize: 18,
-        color: textGrey,
-    },
-    buttonText: {
-        fontSize: 18,
-        color: 'white',
-        alignSelf: 'center'
+        color: colors.textGrey,
     },
 });
 

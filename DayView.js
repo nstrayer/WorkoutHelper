@@ -87,10 +87,13 @@ class DayView extends Component{
         );
     }
 
-    finishWorkout(){
-        sendHistoryToDropbox()
-            .then(resp => console.log("done uploading"))
-            .catch(error => console.log(error))
+    async finishWorkout(){
+        try{
+            await sendHistoryToDropbox()
+            console.log("done uploading")
+        } catch(error){
+             console.log(error)
+        }
         this.props.navigator.pop()
     }
 

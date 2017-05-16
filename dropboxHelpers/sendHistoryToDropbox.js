@@ -12,17 +12,16 @@ const sendHistoryToDropbox = async () => {
 
     let parsedHistory = JSON.parse(localHistory);
 
-    //get rid of the starter row.
-    parsedHistory.shift()
 
     //add a header row and merge into a single string and put in initialized historyCSV variable.
     const historyCSV = [`lift, weight, reps, setNumber, date, time, notes, routine`]
         .concat(
             parsedHistory
-                .map(s => `${s.lift}, ${s.weight}, ${s.reps}, ${s.setNum}, ${s.date}, ${s.time}, ${s.notes}, ${s.routine}`)
+                .map(s => `${s.lift}, ${s.weight}, ${s.reps}, ${s.setNum}, ${s.date}, ${s.time}, ${"nothing yet"}, ${s.routine}`)
         )
         .join("\n");
 
+    // console.log(historyCSV);
     //grab user's dropbox token
     const dbToken = await downloadFile("token");
 
