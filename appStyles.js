@@ -16,7 +16,7 @@ const colors = {
 
 const mainStyles = StyleSheet.create({
     container:{                  //a holder for pretty much everything.
-        marginTop: 65,           //this buffer makes sure stuff isnt obscured by the navigation bar
+        marginTop: 60,           //this buffer makes sure stuff isnt obscured by the navigation bar
         flex:1,
         flexDirection: 'column',
     },
@@ -38,7 +38,7 @@ const mainStyles = StyleSheet.create({
     },
     largeText: {
         fontSize: 24,
-        color: colors.textGrey,
+        color: colors.textBlue,
     },
 });
 
