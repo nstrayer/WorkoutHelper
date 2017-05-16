@@ -74,7 +74,8 @@ class DayView extends Component{
                 }
             }
 
-            const doneToday = history.filter(set => set.routine === routine && set.date === date)
+            //if we want persistance to go beyond just navigating between lifts, start here. 
+            // const doneToday = history.filter(set => set.routine === routine && set.date === date)
 
             this.setState({
                 dataSource: this.state.ds.cloneWithRows(defaultLifts),

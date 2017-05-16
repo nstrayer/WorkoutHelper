@@ -59,6 +59,9 @@ class SetView extends Component{
 
     }
 
+    componentDidMount(){
+        this.updateLiftWeight(this.state.setWeight)
+    }
 
     //updates the set info state variable and also the set's given rows.
     updateliftInfo(newSetInfo){
