@@ -22,13 +22,11 @@ const mainStyles = StyleSheet.create({
     },
     button: {
         height: 36,
-        // flex: 1,
         alignSelf: 'stretch',
         backgroundColor: colors.buttonMain,
         borderColor: colors.buttonMainOutline,
         borderWidth: 1,
         borderRadius: 5,
-        // marginBottom: 10,
         justifyContent: 'center'
     },
     buttonText: {
@@ -68,6 +66,12 @@ const mainStyles = StyleSheet.create({
         alignItems: 'center',
         flex: 1,
     },
+    titleWrap:{
+        flex: 1,
+        paddingTop: 15,
+        justifyContent: 'space-around',
+        alignItems: 'center',
+    }
 });
 
 module.exports = {

@@ -7,18 +7,19 @@ import {
     ActivityIndicator,
     TouchableHighlight,
 } from 'react-native';
-import {colors, mainStyles} from './appStyles';
+import {colors, mainStyles} from '../appStyles';
 
 //for NavOptions component
-import WorkoutChoose from './WorkoutChoose';
+// import WorkoutChoose from './WorkoutChoose';
 
+import NewWorkout from '../NewWorkout/NewWorkout';
 //for the login button
 import {
     findToken,
     saveToken,
     deleteToken,
     grabDropboxToken,
-} from './tokenTasks';
+} from '../tokenTasks';
 
 class NavOptions extends Component{
     constructor(props){
@@ -29,7 +30,7 @@ class NavOptions extends Component{
         if(this.props.token){
             this.props.navigator.push({
                 title: "Choose Workout",
-                component: WorkoutChoose,
+                component: NewWorkout,
                 passProps: {
                     navigator: this.props.navigator,
                     token: this.props.token}
@@ -124,7 +125,7 @@ class WelcomePage extends Component{
     render(){
         return(
             <View style = {[mainStyles.container, {flexDirection:"column"}]}>
-                <View style = {styles.greetWrap}>
+                <View style = {mainStyles.titleWrap}>
                     <Text style = {mainStyles.largeText}>{`It's a good day to lift`}</Text>
                 </View>
                 <View style = {styles.navigation}>
@@ -144,18 +145,14 @@ class WelcomePage extends Component{
 }
 
 const styles = StyleSheet.create({
-    greetWrap: {
-        flex: 1,
-        paddingTop: 15,
-        justifyContent: 'space-around',
-        alignItems: 'center',
-    },
     navigation: {
         flex: 3,
         justifyContent: 'center',
     },
     logIn: {
         flex: 1,
+        justifyContent: 'center',
+
     }
 });
 

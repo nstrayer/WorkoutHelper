@@ -10,8 +10,7 @@ import {
   View
 } from 'react-native';
 
-import AppNav from './AppNav';
-import WelcomePage from './WelcomePage';
+import WelcomePage from './Welcome/WelcomePage';
 
 //setup styles for this component here.
 const styles = StyleSheet.create({
