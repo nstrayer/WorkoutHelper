@@ -93,7 +93,7 @@ class WorkoutChoose extends Component {
         return(
             <View style = {[mainStyles.container, {flexDirection:"column"}]}>
                 <View style = {mainStyles.titleWrap}>
-                    <Text style = {mainStyles.largeText}>{`Choose your workout`}</Text>
+                    <Text style = {mainStyles.largeText}>{this.state.syncing? `Syncing with Dropbox`:`Choose your workout`}</Text>
                 </View>
                 <View style = {styles.navigation}>
                     {workoutList}

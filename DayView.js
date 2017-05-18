@@ -152,23 +152,23 @@ class DayView extends Component{
     footer(){
         return (
             <View>
-                <View style = {mainStyles.inputWrap}>
+                <View style = {{backgroundColor: 'orangered'}}>
                     <TouchableHighlight
                         style = {[mainStyles.button, {backgroundColor: colors.buttonDone}]}
                         onPress={() => this.addLift()}
                         underlayColor='#dddddd'
                     >
-                        <Text style = {mainStyles.buttonText}> {`Add Lift`} </Text>
+                        <Text style = {[mainStyles.buttonText, mainStyles.buttonContent,{alignSelf: 'flex-start'}]}> {`Add Lift`} </Text>
                     </TouchableHighlight>
                 </View>
-
-                <View style = {mainStyles.inputWrap}>
+                <View style = {{paddingVertical: 5}}/>
+                <View style = {{backgroundColor: 'orangered'}}>
                     <TouchableHighlight
                         style = {[mainStyles.button, {backgroundColor: colors.buttonDone}]}
                         onPress={() => this.finishWorkout()}
                         underlayColor='#dddddd'
                     >
-                        <Text style = {mainStyles.buttonText}> {`Done with workout`} </Text>
+                        <Text style = {[mainStyles.buttonText, mainStyles.buttonContent,{alignSelf: 'flex-start'}]}> {`Done with workout`} </Text>
                     </TouchableHighlight>
                 </View>
             </View>

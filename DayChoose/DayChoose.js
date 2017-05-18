@@ -37,7 +37,6 @@ class DayChoose extends Component{
         });
     }
 
-
     render(){
         let {title, description, days} = this.props.routine;
         let dayList = days.map(day => <DayInfo

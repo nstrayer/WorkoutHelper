@@ -160,7 +160,7 @@ class SetView extends Component{
             <View style={mainStyles.inputWrap}>
                 <View style = {styles.addRemoveButtons}>
                     <TouchableHighlight
-                        style = {mainStyles.button}
+                        style = {mainStyles.smallButton}
                         onPress={() => this.addSet()}
                         underlayColor='#dddddd'
                     >
@@ -169,7 +169,7 @@ class SetView extends Component{
                 </View>
                 <View style = {styles.addRemoveButtons}>
                     <TouchableHighlight
-                        style = {this.state.sets.length === 1? [mainStyles.button, {backgroundColor: colors.textGrey}]: mainStyles.button}
+                        style = {this.state.sets.length === 1? [mainStyles.smallButton, {backgroundColor: colors.textGrey}]: mainStyles.smallButton}
                         onPress={() => this.removeSet()}
                         underlayColor='#dddddd'
                     >
@@ -231,7 +231,7 @@ class SetView extends Component{
                     <View style={[mainStyles.inputWrap, {flex: 2/3}]}>
                         <TouchableHighlight
                             style = {("difficulty" in setInfo) && setInfo.difficulty !== "NA"?
-                                [mainStyles.button, {backgroundColor: colors.buttonDone}] : mainStyles.button
+                                [mainStyles.smallButton, {backgroundColor: colors.buttonDone}] : mainStyles.smallButton
                             }
                             onPress={() => this.finishedSet(setInfo)}
                             underlayColor='#dddddd' >
