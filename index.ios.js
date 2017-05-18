@@ -26,7 +26,7 @@ class WorkoutLog extends Component {
       <NavigatorIOS
         style = {styles.container}
         initialRoute={{
-          title: 'Workout Log',
+          title: 'Welcome',
           component: WelcomePage,
         }}/>
     );

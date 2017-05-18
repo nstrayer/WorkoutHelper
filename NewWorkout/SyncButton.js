@@ -16,10 +16,10 @@ class LogInButton extends Component{
 
     render(){
         return(
-            <TouchableHighlight style = {mainStyles.button}
+            <TouchableHighlight style = {mainStyles.buttonAlt}
                 underlayColor='orangered'
                 onPress={() => this.props.onPress()} >
-                <Text style = {mainStyles.buttonText}>
+                <Text style = {[mainStyles.buttonText, mainStyles.buttonContent]}>
                     Sync With Dropbox
                 </Text>
             </TouchableHighlight>

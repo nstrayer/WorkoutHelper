@@ -16,7 +16,8 @@ import RNFS from 'react-native-fs';
 
 import {colors, mainStyles}  from '../appStyles'
 import WorkoutButton from './WorkoutButton';
-import RoutineView from '../RoutineView';
+// import RoutineView from '../RoutineView';
+import DayChoose from '../DayChoose/DayChoose';
 
 class WorkoutList extends Component{
     constructor(props){
@@ -24,12 +25,13 @@ class WorkoutList extends Component{
     }
 
     onRoutineSelect(routine){
+        console.log(routine)
         //navigate to the routine in app.
         this.props.navigator.push({
             title: "Routine",
-            component: RoutineView,
+            component: DayChoose,
             passProps: {
-                routineData: routine,
+                routine: routine,
                 navigator: this.props.navigator
             }
         });

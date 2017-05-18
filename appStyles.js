@@ -20,19 +20,30 @@ const mainStyles = StyleSheet.create({
         flex:1,
         flexDirection: 'column',
     },
+    // button: {
+    //     height: 36,
+    //     alignSelf: 'stretch',
+    //     backgroundColor: colors.buttonMain,
+    //     borderColor: colors.buttonMainOutline,
+    //     borderWidth: 1,
+    //     borderRadius: 5,
+    //     justifyContent: 'center'
+    // },
     button: {
-        height: 36,
-        alignSelf: 'stretch',
-        backgroundColor: colors.buttonMain,
-        borderColor: colors.buttonMainOutline,
-        borderWidth: 1,
-        borderRadius: 5,
-        justifyContent: 'center'
+        backgroundColor: colors.buttonMain
+    },
+    buttonAlt: {
+        backgroundColor: colors.buttonDone
     },
     buttonText: {
         fontSize: 18,
         color: colors.buttonText,
         alignSelf: 'center'
+    },
+    buttonContent: {
+        paddingVertical: 10,
+        paddingLeft: 5,
+        // backgroundColor: colors.buttonMain
     },
     largeText: {
         fontSize: 24,

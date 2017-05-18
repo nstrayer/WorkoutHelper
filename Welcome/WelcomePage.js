@@ -43,7 +43,7 @@ class NavOptions extends Component{
             <TouchableHighlight style = {mainStyles.button}
                 underlayColor='orangered'
                 onPress={this.goToWorkout.bind(this)} >
-                <Text style = {mainStyles.buttonText}>
+                <Text style = {[mainStyles.buttonText, mainStyles.buttonContent,{alignSelf: 'flex-start'}]}>
                     {this.props.token? "New Workout": "Log in to continue." }
                 </Text>
             </TouchableHighlight>
@@ -97,10 +97,10 @@ class LogInButton extends Component{
 
     render(){
         return(
-            <TouchableHighlight style = {mainStyles.button}
+            <TouchableHighlight style = {mainStyles.buttonAlt}
                 underlayColor='orangered'
                 onPress={() => this.buttonPress()} >
-                <Text style = {mainStyles.buttonText}>
+                <Text style = {[mainStyles.buttonText, mainStyles.buttonContent]}>
                     {this.props.token? "Log Out": "Log In"}
                 </Text>
             </TouchableHighlight>
