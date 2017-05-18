@@ -21,14 +21,15 @@ class WorkoutButton extends Component{
         let {routine} = this.props;
         return(
             <View style = {styles.workoutInfo}>
-                <TouchableHighlight style = {mainStyles.button}
+                <TouchableHighlight
+                    style = {{backgroundColor: colors.buttonMain}}
                     underlayColor='orangered'
-                    onPress={() => console.log(routine.title)} >
+                    onPress={() => this.props.buttonPress(routine)} >
                     <View style = {styles.buttonContent}>
-                        <Text style = {mainStyles.buttonText} >
+                        <Text style = {[mainStyles.buttonText, styles.leftText]} >
                             {routine.title}
                         </Text>
-                        <Text style = {[mainStyles.buttonText,{ fontSize: 12}]} >
+                        <Text style = {[mainStyles.buttonText,{ fontSize: 12}, styles.leftText]} >
                             {routine.description}
                         </Text>
                     </View>
@@ -40,14 +41,17 @@ class WorkoutButton extends Component{
 }
 
 var styles = StyleSheet.create({
+    leftText:{
+        alignSelf: 'flex-start'
+    },
     workoutInfo: {
         marginTop: 15,
         marginBottom: 15,
-        backgroundColor: colors.buttonMain
     },
     buttonContent: {
-        // paddingVertical: 15,
-        backgroundColor: colors.buttonMain
+        paddingVertical: 10,
+        paddingLeft: 5,
+        // backgroundColor: colors.buttonMain
     },
     separator: {
         height: 1,

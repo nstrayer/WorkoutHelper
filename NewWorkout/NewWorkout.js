@@ -85,7 +85,10 @@ class WorkoutChoose extends Component {
     render(){
         let workoutList = this.state.syncing?
             (<ActivityIndicator size='large'/>):
-            (<WorkoutList routines = {this.state.routines} />)
+            (<WorkoutList
+                routines = {this.state.routines}
+                navigator = {this.props.navigator}
+            />)
 
         return(
             <View style = {[mainStyles.container, {flexDirection:"column"}]}>
