@@ -8,7 +8,12 @@ import deleteFile from './deleteFile';
 import saveFile from './saveFile';
 
 async function updateHistory(newRecords){
-    let results = JSON.parse(await downloadFile(`liftHistory.csv`))
+    let results;
+    try{
+        results = JSON.parse(await downloadFile(`liftHistory.csv`))
+    } catch(error){
+        results = []
+    }
 
     //add new results
     results.push(newRecords)

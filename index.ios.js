@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import AppNav from './AppNav';
+import WelcomePage from './WelcomePage';
 
 //setup styles for this component here.
 const styles = StyleSheet.create({
@@ -27,7 +28,7 @@ class WorkoutLog extends Component {
         style = {styles.container}
         initialRoute={{
           title: 'Workout Log',
-          component: AppNav,
+          component: WelcomePage,
         }}/>
     );
   }

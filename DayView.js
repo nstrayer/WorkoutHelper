@@ -51,7 +51,13 @@ class DayView extends Component{
         try {
             const {routine, id: day, lifts: defaultLifts} = this.props
             const {date} = getDateTime();
-            const history = JSON.parse(await downloadFile(`liftHistory.csv`))
+            let history;
+            try{
+                history = JSON.parse(await downloadFile(`liftHistory.csv`));
+            } catch(error){
+                console.log("couldnt find a file so I just made one instead.")
+                history = [];
+            }
 
             //gather each lifts last lifted weight and assign as setweight
             const lastLiftWeights = _(history)

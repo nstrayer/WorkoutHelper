@@ -54,6 +54,7 @@ class WorkoutChoose extends Component {
 
     async getWorkouts(){
 
+        console.log("running get workouts")
         let localRoutinePaths = await availableFiles(".json");
         let rawRoutineData;
 
@@ -97,7 +98,7 @@ class WorkoutChoose extends Component {
         })
 
         await this.deleteLocalRoutines()
-        
+
         //Find all routines in our dropbox...
         const cloudResults = await listAvailableRoutines(this.props.token);
 

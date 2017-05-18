@@ -22,7 +22,7 @@ const mainStyles = StyleSheet.create({
     },
     button: {
         height: 36,
-        flex: 1,
+        // flex: 1,
         alignSelf: 'stretch',
         backgroundColor: colors.buttonMain,
         borderColor: colors.buttonMainOutline,

@@ -10,7 +10,7 @@ const downloadFile = (fileName) => {
             const matchingFiles = result.filter(r => r.name === fileName);
             if(matchingFiles.length === 0){
                 console.log("no files found.")
-                return 'no files found.';
+                return 'no files found!';
             } else {
                 //return two things. First will make sure the found file is truly a file and the second is where the file is.
                 return Promise.all([RNFS.stat(matchingFiles[0].path), matchingFiles[0].path]);
@@ -21,7 +21,7 @@ const downloadFile = (fileName) => {
             if (fileResult[0].isFile()) {
               return RNFS.readFile(fileResult[1], 'utf8') ;
             }
-            return new Promise('no file');
+            return new Promise('no file!');
         });
 
     return filePromise;
