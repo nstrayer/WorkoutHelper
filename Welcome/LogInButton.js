@@ -50,6 +50,7 @@ class LogInButton extends Component{
     }
 
     buttonPress(){
+        console.log('pressed da button again!!')
         if(this.props.token){
             this.logOut()
         } else {
@@ -63,7 +64,7 @@ class LogInButton extends Component{
                 underlayColor='orangered'
                 onPress={() => this.buttonPress()} >
                 <Text style = {[mainStyles.buttonText, mainStyles.buttonContent]}>
-                    {this.props.token? "Log Out": "Log In"}
+                    {this.props.token? "Log Out": "Log In Nao"}
                 </Text>
             </TouchableHighlight>
         )

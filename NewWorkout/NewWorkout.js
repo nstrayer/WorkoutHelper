@@ -108,7 +108,7 @@ class WorkoutChoose extends Component {
 
 var styles = StyleSheet.create({
     navigation: {
-        flex: 3,
+        flex: 7,
     },
     sync: {
         flex: 1,
