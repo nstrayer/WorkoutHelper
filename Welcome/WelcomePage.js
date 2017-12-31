@@ -5,13 +5,13 @@ import {
     Text,
     View,
 } from 'react-native';
-import {colors, mainStyles} from '../appStyles';
+import { colors, mainStyles } from '../appStyles';
 
 import NavOptions from './NavOptions';
 import LogInButton from './LogInButton';
 
-class WelcomePage extends Component{
-    constructor(props){
+class WelcomePage extends Component {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -20,30 +20,31 @@ class WelcomePage extends Component{
     }
 
     //user has logged in and a token has been passed over.
-    receivedToken(token){
-        this.setState({token: token})
+    receivedToken(token) {
+        this.setState({ token: token })
     }
 
-    render(){
-        return(
-            <View style = {[mainStyles.container, {flexDirection:"column"}]}>
-                <View style = {mainStyles.titleWrap}>
-                    <Text style = {mainStyles.largeText}>{`It's a good day to lift`}</Text>
+    render() {
+        return (
+            <View style={[mainStyles.container, { flexDirection: "column" }]}>
+                <View style={mainStyles.titleWrap}>
+                    <Text style={mainStyles.largeText}>{`Tis' a good day to lift`}</Text>
                 </View>
-                <View style = {styles.navigation}>
+                <View style={styles.navigation}>
                     <NavOptions
-                        token = {this.state.token}
-                        navigator = {this.props.navigator}
+                        token={this.state.token}
+                        navigator={this.props.navigator}
                     />
                 </View>
-                <View style = {styles.logIn}>
+                <View style={styles.logIn}>
                     <LogInButton
-                        token = {this.state.token}
-                        onLogin = {this.receivedToken.bind(this)}/>
+                        token={this.state.token}
+                        onLogin={this.receivedToken.bind(this)}
+                    />
                 </View>
             </View>
         )
-  }
+    }
 }
 
 const styles = StyleSheet.create({
